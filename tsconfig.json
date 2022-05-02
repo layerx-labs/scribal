@@ -1,0 +1,34 @@
+{
+  "compilerOptions": {
+    "target": "ES2019",
+    "module": "CommonJS",
+    "strict": false,
+    "allowJs": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noImplicitAny": true,
+    "importHelpers": true,
+    "declaration": true,
+    "declarationDir": "./dist",
+    "baseUrl": "lib",
+    "rootDir": "./",
+    "outDir": "./dist",
+    "paths": {
+      "@lib": ["."],
+      "@constants/*": ["constants/*"],
+      "@constants": ["constants/"]
+    }
+  },
+  "exclude": [
+    "node_modules",
+    "**/*.test.ts",
+    "**/*.spec.ts",
+    "dist",
+    "jest.config.js",
+    "jest.setup.js"
+  ],
+  "include": ["**/*.ts", "**/*.js"]
+}

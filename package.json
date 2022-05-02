@@ -2,13 +2,14 @@
   "name": "@taikai/log-service",
   "version": "1.0.0",
   "description": "Write logs on a file and on console",
-  "main": "src/index.js",
+  "main": "dist/src/index.js",
+  "types": "dist/src/index.d.ts",
   "scripts": {
     "type-check": "tsc --pretty --noEmit",
     "lint": "eslint . --ext ts --ext js --fix",
     "format": "prettier --write **/*.{js,ts}",
     "build": "tsc",
-    "postbuild": "tscpaths -p ./tsconfig.json -s ./ -o ./built",
+    "postbuild": "tscpaths -p ./tsconfig.json -s ./ -o ./dist",
     "test": "jest -u --config=jest.config.js --noStackTrace --runInBand --detectOpenHandles --passWithNoTests ",
     "prepare": "husky install"
   },
@@ -50,5 +51,6 @@
     "ts-jest": "27.1.4",
     "tslib": "^2.4.0",
     "typescript": "4.6.4"
-  }
+  },
+  "files": ["dist"]
 }

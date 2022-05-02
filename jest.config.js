@@ -1,7 +1,7 @@
 module.exports = {
   roots: ['<rootDir>/src/'],
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
-  testPathIgnorePatterns: ['<rootDir>/built/', '<rootDir>/node_modules/'],
+  testPathIgnorePatterns: ['<rootDir>/dist/', '<rootDir>/node_modules/'],
   transformIgnorePatterns: ['<rootDir>/node_modules/'],
   testMatch: ['**/*.(spec|test).ts'],
   clearMocks: true,

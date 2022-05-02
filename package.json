@@ -1,6 +1,6 @@
 {
   "name": "@marshall-taikai/log-service",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Write logs on a file and on console",
   "main": "dist/lib/index.js",
   "types": "dist/types/index.d.ts",

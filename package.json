@@ -1,9 +1,9 @@
 {
-  "name": "@taikai/log-service",
+  "name": "@marshall-taikai/log-service",
   "version": "1.0.1",
   "description": "Write logs on a file and on console",
-  "main": "dist/src/index.js",
-  "types": "dist/src/index.d.ts",
+  "main": "dist/lib/index.js",
+  "types": "dist/types/index.d.ts",
   "scripts": {
     "type-check": "tsc --pretty --noEmit",
     "lint": "eslint . --ext ts --ext js --fix",

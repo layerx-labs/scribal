@@ -12,12 +12,12 @@
     "noImplicitAny": true,
     "importHelpers": true,
     "declaration": true,
-    "declarationDir": "./dist",
-    "baseUrl": "./src/",
+    "declarationDir": "./dist/types",
+    "baseUrl": "lib",
     "rootDir": "./",
     "outDir": "./dist",
     "paths": {
-      "@src": ["."],
+      "@lib": ["."],
       "@constants/*": ["constants/*"],
       "@constants": ["constants/"]
     }

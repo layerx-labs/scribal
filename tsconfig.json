@@ -18,8 +18,10 @@
     "outDir": "./dist",
     "paths": {
       "@lib": ["."],
-      "@constants/*": ["constants/*"],
-      "@constants": ["constants/"]
+      "@utils/*": ["utils/*"],
+      "@utils": ["utils/"],
+      "@types/*": ["types/*"],
+      "@types": ["types/"]
     }
   },
   "exclude": [

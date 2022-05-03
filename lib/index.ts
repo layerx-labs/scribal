@@ -37,8 +37,8 @@ class LogService {
     this.blackListParams = _blackListParams;
   }
 
-  addToBlackList(_blackListParam: string) {
-    this.blackListParams.push(_blackListParam);
+  addToBlackList(newBlackListParam: string[]) {
+    this.blackListParams.push(...newBlackListParam);
   }
 
   removeFromBlackList(_blackListParam: string) {

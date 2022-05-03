@@ -26,7 +26,10 @@
     "url": "https://github.com/taikai/log-service/issues"
   },
   "homepage": "https://github.com/taikai/log-service#readme",
-  "dependencies": {},
+  "dependencies": {
+    "winston": "^3.7.2",
+    "winston-daily-rotate-file": "^4.6.1"
+  },
   "devDependencies": {
     "@types/jest": "^27.4.1",
     "@typescript-eslint/eslint-plugin": "^5.22.0",

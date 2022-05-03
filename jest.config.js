@@ -16,4 +16,11 @@ module.exports = {
   transform: {
     '^.+\\.ts$': 'ts-jest',
   },
+  moduleNameMapper: {
+    '@utils/(.*)': '<rootDir>/lib/utils/$1',
+    '@utils': '<rootDir>/lib/utils/',
+    '@types/(.*)': '<rootDir>/lib/types/$1',
+    '@types': '<rootDir>/lib/types/',
+    '@lib': '<rootDir>/lib/',
+  },
 };

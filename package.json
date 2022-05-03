@@ -10,7 +10,7 @@
     "format": "prettier --write **/*.{js,ts}",
     "build": "tsc",
     "postbuild": "tscpaths -p ./tsconfig.json -s ./ -o ./dist",
-    "test": "jest -u --config=jest.config.js --noStackTrace --runInBand --detectOpenHandles  --no-cache --passWithNoTests ",
+    "test": "jest -u --config=jest.config.js --noStackTrace --detectOpenHandles  --no-cache --passWithNoTests",
     "prepare": "husky install"
   },
   "repository": {

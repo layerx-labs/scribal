@@ -5,11 +5,11 @@
   "main": "dist/lib/index.js",
   "types": "dist/lib/index.d.ts",
   "scripts": {
-    "type-check": "tsc --pretty --noEmit",
+    "typedoc": "typedoc --options ./typedoc.json",
     "lint": "eslint . --ext ts --ext js --fix",
     "format": "prettier --write **/*.{js,ts}",
-    "build": "tsc",
-    "postbuild": "tscpaths -p ./tsconfig.json -s ./ -o ./dist",
+    "build": "tsc && tscpaths -p ./tsconfig.json -s ./ -o ./dist",
+    "postbuild": "npm run typedoc && npm pack && node ./scripts/update-lib-tester-pkg-json.js",
     "test": "jest -u --config=jest.config.js --noStackTrace --detectOpenHandles  --no-cache --passWithNoTests",
     "prepare": "husky install"
   },
@@ -53,6 +53,7 @@
     "ts-jest": "28.0.0",
     "tscpaths": "0.0.9",
     "tslib": "^2.4.0",
+    "typedoc": "^0.22.15",
     "typedocs": "^0.6.7",
     "typescript": "4.6.4"
   },

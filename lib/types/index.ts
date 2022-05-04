@@ -56,9 +56,9 @@ export type FileConfig = {
    */
   silent?: boolean;
   /**
-   * The directory folder to store the log file(s)
+   * The directory folder to store the log file(s), if not specified, create a `./log/` dir in the current folder
    */
-  logFileDir: string;
+  logFileDir?: string;
   /**
    * The level for the logs in the file
    */

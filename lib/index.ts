@@ -19,14 +19,16 @@ class LogService {
   private loggers: Logger[];
   private blackListParams: string[];
   private globalConfig: InitialConfig;
+  private mask: string;
 
   /**
    *
    * @param _blackListParams A list of keys which value should be masked on the logs
    */
-  constructor(_blackListParams?: string[]) {
+  constructor(_blackListParams?: string[], _mask?: string) {
     this.loggers = [];
     this.blackListParams = _blackListParams ?? [];
+    this.mask = _mask ?? '*';
   }
 
   getBlackListParams() {
@@ -77,7 +79,7 @@ class LogService {
       if (fileConfig.logDailyRotation) {
         const transport = new transports.DailyRotateFile({
           filename: this.globalConfig.appName + '-%DATE%.log',
-          dirname: fileConfig.logFileDir,
+          dirname: fileConfig.logFileDir ?? './logs/',
           datePattern: fileConfig.logDailyRotationOptions?.datePattern ?? 'YYYY-MM-DD',
           zippedArchive: fileConfig.logDailyRotationOptions?.zippedArchive ?? true,
           maxSize: fileConfig.logDailyRotationOptions?.maxSize ?? '20m',
@@ -93,7 +95,10 @@ class LogService {
 
         this.loggers.push(fileLogger);
       } else {
-        const logPath = path.join(fileConfig.logFileDir, `${this.globalConfig.appName}.log`);
+        const logPath = path.join(
+          fileConfig.logFileDir ?? './logs/',
+          `${this.globalConfig.appName}.log`
+        );
         const fileLogger = createLogger({
           level: fileConfig.logLevel ?? LogLevel.debug,
           format: myJSONformat,
@@ -137,7 +142,7 @@ class LogService {
   }
 
   private log(level: LogLevel, msg: string) {
-    const msgSanitized = sanitizeStr(msg, this.blackListParams);
+    const msgSanitized = sanitizeStr(msg, this.blackListParams, this.mask);
     this.logToLoggers(level, msgSanitized);
   }
 
@@ -150,4 +155,5 @@ class LogService {
   }
 }
 
+export * from '@types';
 export default LogService;

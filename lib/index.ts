@@ -24,6 +24,7 @@ class LogService {
   /**
    *
    * @param _blackListParams A list of keys which value should be masked on the logs
+   * @param _mask The custom mask to be used when
    */
   constructor(_blackListParams?: string[], _mask?: string) {
     this.loggers = [];

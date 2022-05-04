@@ -4,7 +4,8 @@
   "description": "A package to test the usage of log-service library",
   "main": "index.js",
   "scripts": {
-    "dev": "ts-node-dev --respawn --transpile-only index.ts"
+    "dev": "ts-node-dev --respawn --transpile-only index.ts",
+    "dev:js": "node index.js"
   },
   "author": "",
   "license": "ISC",

@@ -32,7 +32,9 @@
     "dist",
     "jest.config.js",
     "jest.setup.js",
-    "lib-tester"
+    "lib-tester",
+    "docs",
+    "scripts"
   ],
   "include": ["**/*.ts", "**/*.js"]
 }

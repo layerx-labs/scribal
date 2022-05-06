@@ -1,14 +1,15 @@
-import process from 'process';
-import { createLogger, format, transports, Logger } from 'winston';
 import 'winston-daily-rotate-file';
-import path from 'path';
-import { sanitizeStr } from '@utils/sanitizers';
+
 import { ConsoleConfig, FileConfig, InitialConfig, LogLevel } from '@types';
+import { sanitizeStr } from '@utils/sanitizers';
+import path from 'path';
+import process from 'process';
+import { createLogger, format, Logger, transports } from 'winston';
 
 const { combine, timestamp, label, printf } = format;
 
 const myFormat = printf(
-  info =>
+  (info) =>
     `${info.timestamp} [${info.label.toString().padStart(5, ' ')}] ${info.level}: ${info.message}`
 );
 
@@ -45,7 +46,7 @@ class LogService {
   }
 
   removeFromBlackList(_blackListParam: string) {
-    this.blackListParams = this.blackListParams.filter(param => param !== _blackListParam);
+    this.blackListParams = this.blackListParams.filter((param) => param !== _blackListParam);
   }
 
   init(config: InitialConfig) {
@@ -79,7 +80,7 @@ class LogService {
       const myJSONformat = combine(myJSONF(), timestamp(), format.json());
       if (fileConfig.logDailyRotation) {
         const transport = new transports.DailyRotateFile({
-          filename: this.globalConfig.appName + '-%DATE%.log',
+          filename: `${this.globalConfig.appName}-%DATE%.log`,
           dirname: fileConfig.logFileDir ?? './logs/',
           datePattern: fileConfig.logDailyRotationOptions?.datePattern ?? 'YYYY-MM-DD',
           zippedArchive: fileConfig.logDailyRotationOptions?.zippedArchive ?? true,
@@ -115,7 +116,9 @@ class LogService {
    * Change the level of logs
    */
   setLevel(level: LogLevel) {
-    this.loggers.forEach(logger => (logger.level = level));
+    this.loggers.forEach((logger) => {
+      logger.level = level;
+    });
   }
   /**
    * Log a message in debug level
@@ -148,11 +151,11 @@ class LogService {
   }
 
   private logToLoggers(level: LogLevel, msg: string) {
-    for (const logger of this.loggers) {
+    this.loggers.forEach((logger) => {
       if (!logger.silent) {
+        logger[level](msg);
       }
-      logger[level](msg);
-    }
+    });
   }
 }
 

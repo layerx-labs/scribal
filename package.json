@@ -18,7 +18,9 @@
     "url": "git+https://github.com/taikai/log-service.git"
   },
   "keywords": [
-    "log"
+    "logs",
+    "console",
+    "log file"
   ],
   "author": "JoseMarshall <josemar@taikai.network> (https://github.com/JoseMarshall)",
   "license": "ISC",

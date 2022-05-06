@@ -84,9 +84,7 @@ const logger = new Logger(blackListKeys, '*');
 logger.init(initConfig);
 ```
 
-
 :bulb: **Hint:** If you are using a js project, you don't need to specify the types of variables :wink:.
-
 
 #### start logging
 
@@ -100,3 +98,36 @@ logger.e('Oh no! Something went wrong 😱');
 ```
 
 ### :ice_cream: BONUS: More cool ways to use the Log-Service library!
+
+Find the API docs references on the following link: [API Docs](https://github.com/taikai/log-service)
+
+## Contributing
+
+The way you can contribute to this project is **submitting new features** or **fixing bugs.**
+
+To get started you have to clone this repo to your machine; open your terminal on the folder you want to clone into, and enter the following commands:
+
+```bash
+$ git clone https://github.com/taikai/log-service.git
+$ cd log-service
+$ npm install
+```
+
+Now you can create a new branch containing the new feature or bugfix, e.g.: `git checkout -b feature/my_new_feature`. This will make it easier for you to submit a pull request and get your feature merged.
+
+### Test Options
+
+Before submitting, you must pass all the unit tests and syntax checks by running the two commands below:
+
+`npm run test` run all the unit test cases in tests folder
+
+There're also a syntax check commands for you:
+`npm run lint`
+
+There is a nested project called **lib-tester** where you can play and see how would work your new feature or bugfix. But first you need to run the `build` script on the root project, then install the dependencies on the nested project using the `npm install` command. It should install the local package NOT the published one:
+
+```json
+...
+"@taikai/log-service": "file:../taikai-log-service-1.0.0.tgz"
+...
+```

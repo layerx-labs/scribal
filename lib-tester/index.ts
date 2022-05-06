@@ -1,4 +1,4 @@
-import Logger, { InitialConfig } from '@marshall-taikai/log-service';
+import Logger, { InitialConfig } from '@taikai/log-service';
 
 const initConfig: InitialConfig = {
   appName: 'My App',

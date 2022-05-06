@@ -2,7 +2,7 @@
 
 Fast and easily write your logs into files and on console, it works with `Ts` as well with `Js` projects.
 
-```typescript=
+```ts
 import Logger, { InitialConfig } from '@taikai/log-service';
 
 /*
@@ -51,13 +51,13 @@ $ npm i @taikai/log-service
 
 use the import statement (in case of a typescript project):
 
-```typescript=
+```ts
 import Logger, { InitialConfig } from '@taikai/log-service';
 ```
 
 or require (if you are working in a js project):
 
-```javascript=
+```js
 const { default: Logger } = require('@taikai/log-service');
 ```
 
@@ -65,7 +65,7 @@ const { default: Logger } = require('@taikai/log-service');
 
 prepare your config object and your blacklist elements (the elements which the info appearing after this should be masked):
 
-```typescript=
+```ts
 ...
 const initConfig: InitialConfig = {
   appName: 'My App',
@@ -84,15 +84,15 @@ const logger = new Logger(blackListKeys, '*');
 logger.init(initConfig);
 ```
 
-:::info
+
 :bulb: **Hint:** If you are using a js project, you don't need to specify the types of variables :wink:.
-:::
+
 
 #### start logging
 
 After initiated yhe logger calling the method .init() you can start writing log messages into your files and/or your console depending on the values you set on the initConfig variable:
 
-```typescript=
+```ts
 logger.i('Log something funny 🚀');
 logger.d('I am being debugged 🚫🐞');
 logger.w('You are about to love this lib ⚠');

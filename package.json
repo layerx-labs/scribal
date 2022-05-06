@@ -1,7 +1,7 @@
 {
-  "name": "@marshall-taikai/log-service",
-  "version": "1.0.5",
-  "description": "Write logs on a file and on console",
+  "name": "@taikai/log-service",
+  "version": "1.0.0",
+  "description": "Write logs in a file/console",
   "main": "dist/lib/index.js",
   "types": "dist/lib/index.d.ts",
   "scripts": {

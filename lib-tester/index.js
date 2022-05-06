@@ -1,4 +1,4 @@
-const { default: Logger } = require('@marshall-taikai/log-service');
+const { default: Logger } = require('@taikai/log-service');
 
 const initConfig = {
   appName: 'My App',

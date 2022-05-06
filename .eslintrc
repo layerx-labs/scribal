@@ -2,13 +2,18 @@
 
     "settings": {
       "import/resolver": {
-        "node": {
+        "typescript": {
           "extensions": [".js", ".ts"],
           "moduleDirectory": ["node_modules"]
         },
         "alias": {
           "map": [
-            ["@constants", "./constants"]
+            ["@constants", "./constants"],
+            ["@lib", "."],
+            ["@utils/*", "./utils/*"],
+            ["@utils", "./utils/"],
+            ["@types/*", "./types/*"],
+            ["@types", "./types/"]
           ],
           "extensions": [".js", ".ts"]
         }
@@ -16,7 +21,6 @@
     },
     "parser": "@typescript-eslint/parser",
     "extends": [
-      "airbnb",
       "prettier",
       "plugin:import/typescript"
     ],
@@ -25,21 +29,15 @@
       "node": true 
     },
     "plugins": [
-      "prettier",
       "simple-import-sort",
-      "import"
+      "import",
+      "@typescript-eslint"
     ],
     "rules": {
       "arrow-parens": "off",
       "import/extensions": "off",
       "semi": 0,
-      "prettier/prettier": [
-        "error", {
-          "semi": true,
-          "endOfLine": "auto"
-        }
-      ],
-      "simple-import-sort/imports": "error",
+      "simple-import-sort/imports": "warn",
       "sort-imports": "off",
       "import/first": "error",
       "import/newline-after-import": "error",
@@ -48,8 +46,10 @@
       "no-shadow": "off",
       "@typescript-eslint/no-shadow": ["error"],
       "@typescript-eslint/no-unused-vars": "off",
-      "@typescript-eslint/no-unused-vars-experimental": "error",
-      "no-unused-vars": "off"
+      "no-unused-vars": "off",
+      "lines-between-class-members": "off",
+      "prefer-template": "warn",
+      "no-restricted-syntax": "warn"
     }
   }
   

@@ -10,6 +10,7 @@ const makeSut = (incomingStr?: string, blackListParams?: string[], mask?: string
 describe(sanitizeStr.name, () => {
   const person =
     '{"name":"marshall pd","age":25,"address":{"country":"Angola","province":"Luanda"},"phoneNumber":"+244 999 999 999","email":"hebojosemar@gmail.com","user":{"username":"marshall","password":"123qwe123"}}';
+
   it('should mask the password with *', () => {
     const { sut, incomingStr, blackListParams } = makeSut(
       'email: hebojosemar@gmail.com, password: 1234, address: earth',
@@ -35,9 +36,20 @@ describe(sanitizeStr.name, () => {
     const { sut, incomingStr, blackListParams, mask } = makeSut(person, ['password', 'email'], '+');
     const result = sut(incomingStr, blackListParams, mask);
 
-    expect(result).toEqual(
-      '{"name":"marshall pd","age":25,"address":{"country":"Angola","province":"Luanda"},"phoneNumber":"+244 999 999 999","email":"++++++","user":{"username":"marshall","password":"++++++"}}'
-    );
+    expect(result).toEqual({
+      name: 'marshall pd',
+      age: 25,
+      address: {
+        country: 'Angola',
+        province: 'Luanda',
+      },
+      phoneNumber: '+244 999 999 999',
+      email: '++++++',
+      user: {
+        username: 'marshall',
+        password: '++++++',
+      },
+    });
   });
 
   it('should mask the blacklisted keys with _', () => {
@@ -48,9 +60,20 @@ describe(sanitizeStr.name, () => {
     );
     const result = sut(incomingStr, blackListParams, mask);
 
-    expect(result).toEqual(
-      '{"name":"marshall pd","age":"______","address":{"country":"Angola","province":"Luanda"},"phoneNumber":"+244 999 999 999","email":"______","user":{"username":"______","password":"______"}}'
-    );
+    expect(result).toEqual({
+      name: 'marshall pd',
+      age: '______',
+      address: {
+        country: 'Angola',
+        province: 'Luanda',
+      },
+      phoneNumber: '+244 999 999 999',
+      email: '______',
+      user: {
+        username: '______',
+        password: '______',
+      },
+    });
   });
 
   describe('Passed an empty string and/or an empty blacklist', () => {

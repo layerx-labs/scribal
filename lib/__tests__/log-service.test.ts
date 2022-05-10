@@ -3,26 +3,11 @@ import LogService from '../index';
 const makeSut = (_blackListParams?: string[]) => new LogService(_blackListParams);
 
 describe(LogService.name, () => {
-  const person = {
-    name: 'marshall pd',
-    age: 25,
-    address: {
-      country: 'Angola',
-      province: 'Luanda',
-    },
-    phoneNumber: '+244 999 999 999',
-    email: 'hebojosemar@gmail.com',
-    user: {
-      username: 'marshall',
-      password: '123qwe123',
-    },
-  };
   const blacklist = ['password', 'phoneNumber', 'email'];
 
   it('should return the blacklist', () => {
     const sut = makeSut(blacklist);
     const result = sut.getBlackListParams();
-
     expect(result).toStrictEqual(blacklist);
   });
 

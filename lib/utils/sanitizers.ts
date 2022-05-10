@@ -5,7 +5,7 @@
  * @param mask default value = '*'
  * @returns The string sanitized
  */
-export function sanitizeStr(str: string, blackListParams: string[], mask?: string): string {
+export function sanitizeStr(str: string, blackListParams: string[], mask?: string) {
   const sanitizer = (_str: string, _mask?: string) =>
     blackListParams.reduce((acc: string, param: string) => {
       const regex = new RegExp(
@@ -20,13 +20,34 @@ export function sanitizeStr(str: string, blackListParams: string[], mask?: strin
   try {
     // Try to transform it into an object to person the `sanitizeObj`
     const obj = JSON.parse(str);
-    return typeof obj === 'object'
-      ? JSON.stringify(sanitizeObj(obj, blackListParams, mask))
-      : sanitizer(str, mask);
+    return typeof obj === 'object' ? sanitizeObj(obj, blackListParams, mask) : sanitizer(str, mask);
   } catch (error) {
     // If failed converting to object, working with string as it is
     return sanitizer(str, mask);
   }
+}
+
+/**
+ * Make sure all the object keys will be in the sanitized object, different from JSON.stringify()
+ * it doesn't remove the get properties
+ * @param obj
+ */
+function includeAllObjProps(obj: Record<string, any>) {
+  let result = {};
+  while (obj !== Object.prototype) {
+    result = {
+      ...Object.getOwnPropertyNames(obj).reduce(
+        (acc, key) =>
+          typeof obj[key] === 'function' || typeof obj[key] === 'symbol'
+            ? acc
+            : { ...acc, [key]: obj[key] },
+        {}
+      ),
+      ...result,
+    };
+    obj = Object.getPrototypeOf(obj);
+  }
+  return result;
 }
 
 /**
@@ -37,8 +58,11 @@ export function sanitizeStr(str: string, blackListParams: string[], mask?: strin
  * @returns The object sanitized
  */
 export function sanitizeObj(obj: Record<string, any>, blackListKeys: string[], mask?: string) {
-  const sanitizer = (_obj: Record<string, any>, _mask?: string) =>
-    Object.entries(_obj).reduce((acc, [key, value]) => {
+  const sanitizer = (_obj: Record<string, any>, _mask?: string) => {
+    if (Array.isArray(_obj)) {
+      return _obj.map((c) => sanitize(c, blackListKeys, mask));
+    }
+    return Object.entries(includeAllObjProps(_obj)).reduce((acc, [key, value]) => {
       acc[key] = blackListKeys.includes(key)
         ? (_mask ?? '*').repeat(6)
         : typeof value === 'object'
@@ -46,6 +70,19 @@ export function sanitizeObj(obj: Record<string, any>, blackListKeys: string[], m
         : value;
       return acc;
     }, {} as Record<string, any>);
-
+  };
   return sanitizer(obj, mask);
 }
+
+function sanitize(content: any, blackListParams: string[], mask?: string): any {
+  switch (typeof content) {
+    case 'string':
+      return sanitizeStr(content, blackListParams, mask);
+    case 'object':
+      return sanitizeObj(content, blackListParams, mask);
+    default:
+      return content;
+  }
+}
+
+export default sanitize;

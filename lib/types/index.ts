@@ -14,6 +14,10 @@ export type ConsoleConfig = {
    * The level for the logs in the console
    */
   logLevel?: LogLevel;
+  /**
+   * Prettify the log message
+   */
+  prettify?: boolean;
 };
 
 export type DailyRotateFileOptions = {

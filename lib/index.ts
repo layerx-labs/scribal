@@ -1,17 +1,12 @@
 import 'winston-daily-rotate-file';
 
 import { ConsoleConfig, FileConfig, InitialConfig, LogLevel } from '@types';
-import { sanitizeStr } from '@utils/sanitizers';
+import sanitize from '@utils/sanitizers';
 import path from 'path';
 import process from 'process';
 import { createLogger, format, Logger, transports } from 'winston';
 
-const { combine, timestamp, label, printf } = format;
-
-const myFormat = printf(
-  (info) =>
-    `${info.timestamp} [${info.label.toString().padStart(5, ' ')}] ${info.level}: ${info.message}`
-);
+const { combine, timestamp, label, printf, prettyPrint } = format;
 
 /**
  *
@@ -55,11 +50,25 @@ class LogService {
     this.addConsoleLogger(config.console);
   }
 
+  private simplifyPrint() {
+    return printf(
+      (info) =>
+        `${info.timestamp} [${info.label.toString().padStart(5, ' ')}] ${
+          info.level
+        }: ${JSON.stringify(info.message)}`
+    );
+  }
+
   private addConsoleLogger(consoleConfig: ConsoleConfig) {
     if (!consoleConfig?.silent) {
+      const myFormat = combine(
+        label({ label: process.pid.toString() }),
+        timestamp(),
+        consoleConfig.prettify ? prettyPrint({ colorize: true, depth: 4 }) : this.simplifyPrint()
+      );
       const consoleLogger = createLogger({
         level: consoleConfig.logLevel ?? LogLevel.debug,
-        format: combine(label({ label: process.pid.toString() }), timestamp(), myFormat),
+        format: myFormat,
         transports: [new transports.Console()],
         silent: consoleConfig.silent,
       });
@@ -69,7 +78,7 @@ class LogService {
 
   private addFileLoggers(fileConfig: FileConfig) {
     if (fileConfig && !fileConfig.silent) {
-      const myJSONF = format((info, opts) => ({
+      const simpleFormatter = format((info, opts) => ({
         ...info,
         pid: process.pid,
         hostname: this.globalConfig.hostname,
@@ -77,7 +86,7 @@ class LogService {
         version: this.globalConfig.version,
       }));
 
-      const myJSONformat = combine(myJSONF(), timestamp(), format.json());
+      const myFormat = combine(simpleFormatter(), timestamp(), format.json());
       if (fileConfig.logDailyRotation) {
         const transport = new transports.DailyRotateFile({
           filename: `${this.globalConfig.appName}-%DATE%.log`,
@@ -90,7 +99,7 @@ class LogService {
 
         const fileLogger = createLogger({
           level: fileConfig.logLevel ?? LogLevel.debug,
-          format: myJSONformat,
+          format: myFormat,
           transports: [transport],
           silent: fileConfig.silent,
         });
@@ -103,7 +112,7 @@ class LogService {
         );
         const fileLogger = createLogger({
           level: fileConfig.logLevel ?? LogLevel.debug,
-          format: myJSONformat,
+          format: myFormat,
           transports: [new transports.File({ filename: logPath })],
           silent: fileConfig.silent,
         });
@@ -120,33 +129,49 @@ class LogService {
       logger.level = level;
     });
   }
+
   /**
-   * Log a message in debug level
+   * Log a content on debug level
+   * @param contents all the contents you intend to log in console/file, each content can be of any type of data
    */
-  d(message: string) {
-    this.log(LogLevel.debug, message);
-  }
-  /**
-   * Log a message in info level
-   */
-  i(message: string) {
-    this.log(LogLevel.info, message);
-  }
-  /**
-   * Log a message in warning level
-   */
-  w(message: string) {
-    this.log(LogLevel.warning, message);
-  }
-  /**
-   * Log a message in error level
-   */
-  e(message: string) {
-    this.log(LogLevel.error, message);
+  d(...contents: any[]) {
+    contents.forEach((content) => {
+      this.log(LogLevel.debug, content);
+    });
   }
 
-  private log(level: LogLevel, msg: string) {
-    const msgSanitized = sanitizeStr(msg, this.blackListParams, this.mask);
+  /**
+   * Log a content on info level
+   * @param contents all the contents you intend to log in console/file, each content can be of any type of data
+   */
+  i(...contents: any[]) {
+    contents.forEach((content) => {
+      this.log(LogLevel.info, content);
+    });
+  }
+
+  /**
+   * Log a content on warning level
+   * @param contents all the contents you intend to log in console/file, each content can be of any type of data
+   */
+  w(...contents: any[]) {
+    contents.forEach((content) => {
+      this.log(LogLevel.warning, content);
+    });
+  }
+
+  /**
+   * Log a content on error level
+   * @param contents all the contents you intend to log in console/file, each content can be of any type of data
+   */
+  e(...contents: any[]) {
+    contents.forEach((content) => {
+      this.log(LogLevel.error, content);
+    });
+  }
+
+  private log(level: LogLevel, content: any) {
+    const msgSanitized = sanitize(content, this.blackListParams, this.mask);
     this.logToLoggers(level, msgSanitized);
   }
 

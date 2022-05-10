@@ -1,7 +1,7 @@
 import 'winston-daily-rotate-file';
 
 import { ConsoleConfig, FileConfig, InitialConfig, LogLevel } from '@types';
-import { sanitizeStr } from '@utils/sanitizers';
+import sanitize from '@utils/sanitizers';
 import path from 'path';
 import process from 'process';
 import { createLogger, format, Logger, transports } from 'winston';
@@ -120,40 +120,48 @@ class LogService {
       logger.level = level;
     });
   }
+
   /**
-   * Log a message in debug level
+   * Log a content on debug level
+   * @param content the content to be logged in console/file, it can be of any type of data
    */
-  d(message: string) {
-    this.log(LogLevel.debug, message);
-  }
-  /**
-   * Log a message in info level
-   */
-  i(message: string) {
-    this.log(LogLevel.info, message);
-  }
-  /**
-   * Log a message in warning level
-   */
-  w(message: string) {
-    this.log(LogLevel.warning, message);
-  }
-  /**
-   * Log a message in error level
-   */
-  e(message: string) {
-    this.log(LogLevel.error, message);
+  d(content: any) {
+    this.log(LogLevel.debug, content);
   }
 
-  private log(level: LogLevel, msg: string) {
-    const msgSanitized = sanitizeStr(msg, this.blackListParams, this.mask);
+  /**
+   * Log a content on info level
+   * @param content the content to be logged in console/file, it can be of any type of data
+   */
+  i(content: any) {
+    this.log(LogLevel.info, content);
+  }
+
+  /**
+   * Log a content on warning level
+   * @param content the content to be logged in console/file, it can be of any type of data
+   */
+  w(content: any) {
+    this.log(LogLevel.warning, content);
+  }
+
+  /**
+   * Log a content on error level
+   * @param content the content to be logged in console/file, it can be of any type of data
+   */
+  e(content: any) {
+    this.log(LogLevel.error, content);
+  }
+
+  private log(level: LogLevel, content: any) {
+    const msgSanitized = sanitize(content, this.blackListParams, this.mask);
     this.logToLoggers(level, msgSanitized);
   }
 
   private logToLoggers(level: LogLevel, msg: string) {
     this.loggers.forEach((logger) => {
       if (!logger.silent) {
-        logger[level](msg);
+        logger[level](JSON.stringify(msg));
       }
     });
   }

@@ -132,34 +132,42 @@ class LogService {
 
   /**
    * Log a content on debug level
-   * @param content the content to be logged in console/file, it can be of any type of data
+   * @param contents all the contents you intend to log in console/file, each content can be of any type of data
    */
-  d(content: any) {
-    this.log(LogLevel.debug, content);
+  d(...contents: any[]) {
+    contents.forEach((content) => {
+      this.log(LogLevel.debug, content);
+    });
   }
 
   /**
    * Log a content on info level
-   * @param content the content to be logged in console/file, it can be of any type of data
+   * @param contents all the contents you intend to log in console/file, each content can be of any type of data
    */
-  i(content: any) {
-    this.log(LogLevel.info, content);
+  i(...contents: any[]) {
+    contents.forEach((content) => {
+      this.log(LogLevel.info, content);
+    });
   }
 
   /**
    * Log a content on warning level
-   * @param content the content to be logged in console/file, it can be of any type of data
+   * @param contents all the contents you intend to log in console/file, each content can be of any type of data
    */
-  w(content: any) {
-    this.log(LogLevel.warning, content);
+  w(...contents: any[]) {
+    contents.forEach((content) => {
+      this.log(LogLevel.warning, content);
+    });
   }
 
   /**
    * Log a content on error level
-   * @param content the content to be logged in console/file, it can be of any type of data
+   * @param contents all the contents you intend to log in console/file, each content can be of any type of data
    */
-  e(content: any) {
-    this.log(LogLevel.error, content);
+  e(...contents: any[]) {
+    contents.forEach((content) => {
+      this.log(LogLevel.error, content);
+    });
   }
 
   private log(level: LogLevel, content: any) {

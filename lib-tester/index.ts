@@ -7,7 +7,7 @@ const initConfig: InitialConfig = {
   version: '1.0',
   console: {
     silent: false,
-    prettify: true,
+    prettify: false,
   },
   file: {
     silent: false,
@@ -29,17 +29,22 @@ const person = {
   },
   phoneNumber: '+244 999 999 999',
   email: 'marshall@taikai.network',
-  user: [
+  logins: [
     {
       username: 'marshall',
       password: '123qwe123',
     },
+    {
+      username: 'taikai1',
+      password: '1969',
+    },
   ],
 };
 
-logger.i(person);
+logger.i(['Find my personal information', person, 'Hope you enjoy']);
 logger.d('I am being debugged 🚫🐞');
 logger.w('You are about to love this lib ⚠');
 logger.e('Oh no! Something went wrong 😱');
+logger.i('Nevermind', 'its all okay 💯');
 
 export {};

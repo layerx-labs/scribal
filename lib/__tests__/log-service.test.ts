@@ -8,7 +8,6 @@ describe(LogService.name, () => {
   it('should return the blacklist', () => {
     const sut = makeSut(blacklist);
     const result = sut.getBlackListParams();
-
     expect(result).toStrictEqual(blacklist);
   });
 

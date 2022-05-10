@@ -51,12 +51,12 @@ class LogService {
   }
 
   private simplifyPrint() {
-    return printf(
-      (info) =>
-        `${info.timestamp} [${info.label.toString().padStart(5, ' ')}] ${
-          info.level
-        }: ${JSON.stringify(info.message)}`
-    );
+    return printf((info) => {
+      const { timestamp: timestampInfo, label: labelInfo, level: levelInfo, ...restOfInfo } = info;
+      return `${timestampInfo} [${labelInfo
+        .toString()
+        .padStart(5, ' ')}] ${levelInfo}: ${JSON.stringify(restOfInfo)}`;
+    });
   }
 
   private addConsoleLogger(consoleConfig: ConsoleConfig) {

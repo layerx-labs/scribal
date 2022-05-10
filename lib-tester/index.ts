@@ -1,4 +1,5 @@
 import Logger, { InitialConfig } from '@taikai/log-service';
+import path from 'path';
 
 const initConfig: InitialConfig = {
   appName: 'My App',
@@ -6,9 +7,11 @@ const initConfig: InitialConfig = {
   version: '1.0',
   console: {
     silent: false,
+    prettify: true,
   },
   file: {
-    silent: true,
+    silent: false,
+    logFileDir: path.resolve('lib-tester/logs'),
   },
 };
 
@@ -34,7 +37,6 @@ const person = {
   ],
 };
 
-logger.i('Person info');
 logger.i(person);
 logger.d('I am being debugged 🚫🐞');
 logger.w('You are about to love this lib ⚠');

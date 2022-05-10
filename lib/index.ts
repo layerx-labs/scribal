@@ -6,12 +6,7 @@ import path from 'path';
 import process from 'process';
 import { createLogger, format, Logger, transports } from 'winston';
 
-const { combine, timestamp, label, printf } = format;
-
-const myFormat = printf(
-  (info) =>
-    `${info.timestamp} [${info.label.toString().padStart(5, ' ')}] ${info.level}: ${info.message}`
-);
+const { combine, timestamp, label, printf, prettyPrint } = format;
 
 /**
  *
@@ -55,11 +50,25 @@ class LogService {
     this.addConsoleLogger(config.console);
   }
 
+  private simplifyPrint() {
+    return printf(
+      (info) =>
+        `${info.timestamp} [${info.label.toString().padStart(5, ' ')}] ${
+          info.level
+        }: ${JSON.stringify(info.message)}`
+    );
+  }
+
   private addConsoleLogger(consoleConfig: ConsoleConfig) {
     if (!consoleConfig?.silent) {
+      const myFormat = combine(
+        label({ label: process.pid.toString() }),
+        timestamp(),
+        consoleConfig.prettify ? prettyPrint({ colorize: true, depth: 4 }) : this.simplifyPrint()
+      );
       const consoleLogger = createLogger({
         level: consoleConfig.logLevel ?? LogLevel.debug,
-        format: combine(label({ label: process.pid.toString() }), timestamp(), myFormat),
+        format: myFormat,
         transports: [new transports.Console()],
         silent: consoleConfig.silent,
       });
@@ -69,7 +78,7 @@ class LogService {
 
   private addFileLoggers(fileConfig: FileConfig) {
     if (fileConfig && !fileConfig.silent) {
-      const myJSONF = format((info, opts) => ({
+      const simpleFormatter = format((info, opts) => ({
         ...info,
         pid: process.pid,
         hostname: this.globalConfig.hostname,
@@ -77,7 +86,7 @@ class LogService {
         version: this.globalConfig.version,
       }));
 
-      const myJSONformat = combine(myJSONF(), timestamp(), format.json());
+      const myFormat = combine(simpleFormatter(), timestamp(), format.json());
       if (fileConfig.logDailyRotation) {
         const transport = new transports.DailyRotateFile({
           filename: `${this.globalConfig.appName}-%DATE%.log`,
@@ -90,7 +99,7 @@ class LogService {
 
         const fileLogger = createLogger({
           level: fileConfig.logLevel ?? LogLevel.debug,
-          format: myJSONformat,
+          format: myFormat,
           transports: [transport],
           silent: fileConfig.silent,
         });
@@ -103,7 +112,7 @@ class LogService {
         );
         const fileLogger = createLogger({
           level: fileConfig.logLevel ?? LogLevel.debug,
-          format: myJSONformat,
+          format: myFormat,
           transports: [new transports.File({ filename: logPath })],
           silent: fileConfig.silent,
         });
@@ -161,7 +170,7 @@ class LogService {
   private logToLoggers(level: LogLevel, msg: string) {
     this.loggers.forEach((logger) => {
       if (!logger.silent) {
-        logger[level](JSON.stringify(msg));
+        logger[level](msg);
       }
     });
   }

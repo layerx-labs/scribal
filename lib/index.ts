@@ -52,10 +52,20 @@ class LogService {
 
   private simplifyPrint() {
     return printf((info) => {
-      const { timestamp: timestampInfo, label: labelInfo, level: levelInfo, ...restOfInfo } = info;
-      return `${timestampInfo} [${labelInfo
-        .toString()
-        .padStart(5, ' ')}] ${levelInfo}: ${JSON.stringify(restOfInfo)}`;
+      const {
+        timestamp: timestampInfo,
+        label: labelInfo,
+        level: levelInfo,
+        message: messageInfo,
+        ...restOfInfo
+      } = info;
+      return `${timestampInfo} [${labelInfo.toString().padStart(5, ' ')}] ${levelInfo}: ${
+        Object.keys(restOfInfo).length
+          ? JSON.stringify({ message: messageInfo, ...restOfInfo })
+          : typeof messageInfo === 'string'
+          ? messageInfo
+          : JSON.stringify(messageInfo)
+      }`;
     });
   }
 

@@ -149,12 +149,13 @@ class LogService {
     contents.forEach((content) => {
       this.log(LogLevel.debug, content);
     });
-
+    
+    const self = this;
     const elastic = this.globalConfig.elasticSearch;
     return {
       send() {
         contents.forEach((content) => {
-          this.sendLog(LogLevel.debug, content, true)
+          self.sendLog(LogLevel.debug, content, true)
         });  
       },
       call(callback) {
@@ -176,12 +177,13 @@ class LogService {
     contents.forEach((content) => {
       this.log(LogLevel.info, content);
     });
-
+    
+    const self = this;
     const elastic = this.globalConfig.elasticSearch;
     return {
       send() {
         contents.forEach((content) => {
-          this.sendLog(LogLevel.info, content, true)
+          self.sendLog(LogLevel.info, content, true)
         });
       },
       call(callback) {
@@ -203,12 +205,14 @@ class LogService {
     contents.forEach((content) => {
       this.log(LogLevel.warning, content);
     });
-    
+  
+    const self = this;
+  
     const elastic = this.globalConfig.elasticSearch;
     return {
       send() {
         contents.forEach((content) => {
-          this.sendLog(LogLevel.warning, content, true)
+          self.sendLog(LogLevel.warning, content, true)
         });  
       },
       call(callback) {
@@ -230,12 +234,13 @@ class LogService {
     contents.forEach((content) => {
       this.log(LogLevel.error, content);
     });
-
+    
+    const self = this;
     const elastic = this.globalConfig.elasticSearch;
     return {
       send() {
         contents.forEach((content) => {
-          this.sendLog(LogLevel.error, content, true)
+          self.sendLog(LogLevel.error, content, true)
         });  
       },
       call(callback) {

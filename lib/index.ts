@@ -1,6 +1,7 @@
 import 'winston-daily-rotate-file';
 
 import { ConsoleConfig, FileConfig, InitialConfig, LogLevel } from '@types';
+import EventCatcher from '@utils/event-catcher';
 import sanitize from '@utils/sanitizers';
 import path from 'path';
 import process from 'process';
@@ -63,9 +64,9 @@ class LogService {
         Object.keys(restOfInfo).length
           ? JSON.stringify({ message: messageInfo, ...restOfInfo })
           : typeof messageInfo === 'string'
-          ? messageInfo
-          : JSON.stringify(messageInfo)
-      }`;
+            ? messageInfo
+            : JSON.stringify(messageInfo)
+        }`;
     });
   }
 
@@ -148,6 +149,14 @@ class LogService {
     contents.forEach((content) => {
       this.log(LogLevel.debug, content);
     });
+
+    return {
+      send() {
+        contents.forEach((content) => {
+          this.sendLog(LogLevel.debug, content, true)
+        });  
+      }
+    }
   }
 
   /**
@@ -158,6 +167,14 @@ class LogService {
     contents.forEach((content) => {
       this.log(LogLevel.info, content);
     });
+
+    return {
+      send() {
+        contents.forEach((content) => {
+          this.sendLog(LogLevel.info, content, true)
+        });
+      }
+    }
   }
 
   /**
@@ -168,6 +185,14 @@ class LogService {
     contents.forEach((content) => {
       this.log(LogLevel.warning, content);
     });
+    
+    return {
+      send() {
+        contents.forEach((content) => {
+          this.sendLog(LogLevel.warning, content, true)
+        });  
+      }
+    }
   }
 
   /**
@@ -178,11 +203,62 @@ class LogService {
     contents.forEach((content) => {
       this.log(LogLevel.error, content);
     });
+
+    return {
+      send() {
+        contents.forEach((content) => {
+          this.sendLog(LogLevel.error, content, true)
+        });  
+      }
+    }
   }
 
   private log(level: LogLevel, content: any) {
     const msgSanitized = sanitize(content, this.blackListParams, this.mask);
     this.logToLoggers(level, msgSanitized);
+    this.sendLog(level, content);
+  }
+
+  private sendLog(level: LogLevel, content: any, force?: boolean) {
+    // If event catcher is not configured, end the function here
+    if (!this.globalConfig.eventCatcher) return;
+
+    const targets = this.globalConfig.eventCatcher.targets || [];
+    // Sending to EventCatcher
+    const eventCatcher = new EventCatcher(this.globalConfig.eventCatcher);
+
+    let eventIndex = '';
+
+    switch (typeof content) {
+      case 'object':
+        eventIndex = JSON.stringify(content);
+        break;
+      case 'undefined':
+        eventIndex = 'Empty log message';
+        break;
+      default:
+        eventIndex = String(content);
+        break;
+    }
+
+    const send = () => {
+      eventCatcher.send({
+        eventIndex: eventIndex,
+        source: `${level}-log`
+      });
+    }
+
+    // Just send the log
+    if (force)
+      return send();
+
+    // Send all the logs
+    if (targets.includes('*'))
+      return send();
+
+    // Send only the 
+    if (targets.includes(level))
+      send();
   }
 
   private logToLoggers(level: LogLevel, msg: string) {

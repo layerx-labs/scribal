@@ -69,23 +69,44 @@ export type FileConfig = {
   logLevel?: LogLevel;
 };
 
-export type EventCatcherConfig = {
+export type ElasticSearchConfig = {
   /**
-   * The EventCatcher server url
+   * The elastic search client
    */
-  serverUrl: string,
+  client: ElasticSearchClient,
   /**
-   * The targets where the EventCatcher sender will be triggered (default `manual`).
-   * We send manually using logService.i('msg')`.send()` method
+   * The targets where the sender will be triggered (default `manual`).
+   * We send manually using logService.i('msg')`.send()` method.
    */
   targets?: ('*' | LogLevel)[]
 };
+
+export interface LogServiceChainExtensions {
+  /**
+   * Send the log to the Elastic Search Server
+   */
+  send: () => void
+};
+
+export interface ElasticSearchClient {
+  push(index: string, body: object): Promise<boolean>;
+
+  ping(): Promise<void>;
+
+  updateStatus(status: any): Promise<void>;
+
+  pushTx(ctx: object, txId: string): Promise<void>;
+
+  getClient(): any;
+
+  isEnabled(): boolean;
+}
 
 export type InitialConfig = {
   appName: string;
   version: string;
   hostname: string;
   console?: ConsoleConfig;
-  eventCatcher?: EventCatcherConfig;
+  elasticSearch?: ElasticSearchConfig;
   file?: FileConfig;
 };

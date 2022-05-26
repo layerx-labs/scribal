@@ -150,12 +150,21 @@ class LogService {
       this.log(LogLevel.debug, content);
     });
 
+    const elastic = this.globalConfig.elasticSearch;
     return {
       send() {
         contents.forEach((content) => {
           this.sendLog(LogLevel.debug, content, true)
         });  
-      }
+      },
+      call(callback) {
+          if ( typeof callback !== 'function')
+            return console.error('Invalid parameter provided');
+          callback({
+            contents: contents,
+            loglevel: LogLevel.warning
+          }, elastic);
+      },
     }
   }
 
@@ -168,12 +177,21 @@ class LogService {
       this.log(LogLevel.info, content);
     });
 
+    const elastic = this.globalConfig.elasticSearch;
     return {
       send() {
         contents.forEach((content) => {
           this.sendLog(LogLevel.info, content, true)
         });
-      }
+      },
+      call(callback) {
+          if ( typeof callback !== 'function')
+            return console.error('Invalid parameter provided');
+          callback({
+            contents: contents,
+            loglevel: LogLevel.warning
+          }, elastic);
+      },
     }
   }
 
@@ -186,12 +204,21 @@ class LogService {
       this.log(LogLevel.warning, content);
     });
     
+    const elastic = this.globalConfig.elasticSearch;
     return {
       send() {
         contents.forEach((content) => {
           this.sendLog(LogLevel.warning, content, true)
         });  
-      }
+      },
+      call(callback) {
+          if ( typeof callback !== 'function')
+            return console.error('Invalid parameter provided');
+          callback({
+            contents: contents,
+            loglevel: LogLevel.warning
+          }, elastic);
+      },
     }
   }
 
@@ -204,12 +231,21 @@ class LogService {
       this.log(LogLevel.error, content);
     });
 
+    const elastic = this.globalConfig.elasticSearch;
     return {
       send() {
         contents.forEach((content) => {
           this.sendLog(LogLevel.error, content, true)
         });  
-      }
+      },
+      call(callback) {
+          if ( typeof callback !== 'function')
+            return console.error('Invalid parameter provided');
+          callback({
+            contents: contents,
+            loglevel: LogLevel.warning
+          }, elastic);
+      },
     }
   }
 

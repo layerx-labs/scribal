@@ -85,7 +85,33 @@ export interface LogServiceChainExtensions {
   /**
    * Send the log to the Elastic Search Server
    */
-  send: () => void
+  send: () => void,
+  /**
+   * Make a custom call according to developer will
+   */
+  call: (
+    /**
+     * Function that will be called
+     */
+    callback: (
+      /**
+      * Log Options 
+      */
+      options: {
+        /**
+         * Log Level
+         */
+        loglevel: LogLevel,
+        /**
+         * Contents to be logged 
+         */
+        contents: any[]
+      },
+      /**
+       * ElasticSearch Config
+       */
+      config: ElasticSearchConfig) => void
+  ) => void
 };
 
 export interface ElasticSearchClient {

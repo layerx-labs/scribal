@@ -1,7 +1,7 @@
 import 'winston-daily-rotate-file';
 
-import { ConsoleConfig, FileConfig, InitialConfig, LogLevel } from '@types';
-import EventCatcher from '@utils/event-catcher';
+import { ConsoleConfig, FileConfig, InitialConfig, LogLevel, LogServiceChainExtensions } from '@types';
+import ElasticSearch from '@utils/elastic-search';
 import sanitize from '@utils/sanitizers';
 import path from 'path';
 import process from 'process';
@@ -145,7 +145,7 @@ class LogService {
    * Log a content on debug level
    * @param contents all the contents you intend to log in console/file, each content can be of any type of data
    */
-  d(...contents: any[]) {
+  d(...contents: any[]): LogServiceChainExtensions {
     contents.forEach((content) => {
       this.log(LogLevel.debug, content);
     });
@@ -163,7 +163,7 @@ class LogService {
    * Log a content on info level
    * @param contents all the contents you intend to log in console/file, each content can be of any type of data
    */
-  i(...contents: any[]) {
+  i(...contents: any[]): LogServiceChainExtensions {
     contents.forEach((content) => {
       this.log(LogLevel.info, content);
     });
@@ -181,7 +181,7 @@ class LogService {
    * Log a content on warning level
    * @param contents all the contents you intend to log in console/file, each content can be of any type of data
    */
-  w(...contents: any[]) {
+  w(...contents: any[]): LogServiceChainExtensions {
     contents.forEach((content) => {
       this.log(LogLevel.warning, content);
     });
@@ -199,7 +199,7 @@ class LogService {
    * Log a content on error level
    * @param contents all the contents you intend to log in console/file, each content can be of any type of data
    */
-  e(...contents: any[]) {
+  e(...contents: any[]): LogServiceChainExtensions {
     contents.forEach((content) => {
       this.log(LogLevel.error, content);
     });
@@ -220,31 +220,31 @@ class LogService {
   }
 
   private sendLog(level: LogLevel, content: any, force?: boolean) {
-    // If event catcher is not configured, end the function here
-    if (!this.globalConfig.eventCatcher) return;
+    // If elastic search is not configured, end the function here
+    if (!this.globalConfig.elasticSearch) return;
 
-    const targets = this.globalConfig.eventCatcher.targets || [];
-    // Sending to EventCatcher
-    const eventCatcher = new EventCatcher(this.globalConfig.eventCatcher);
+    const targets = this.globalConfig.elasticSearch.targets || [];
+    // Sending to Elastic Search
+    const elastic = new ElasticSearch(this.globalConfig.elasticSearch);
 
-    let eventIndex = '';
+    let message = '';
 
     switch (typeof content) {
       case 'object':
-        eventIndex = JSON.stringify(content);
+        message = JSON.stringify(content);
         break;
       case 'undefined':
-        eventIndex = 'Empty log message';
+        message = 'Empty log message';
         break;
       default:
-        eventIndex = String(content);
+        message = String(content);
         break;
     }
 
     const send = () => {
-      eventCatcher.send({
-        eventIndex: eventIndex,
-        source: `${level}-log`
+      elastic.send({
+        index: `${level}-log`,
+        message: message,
       });
     }
 

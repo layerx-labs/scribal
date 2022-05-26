@@ -69,10 +69,23 @@ export type FileConfig = {
   logLevel?: LogLevel;
 };
 
+export type EventCatcherConfig = {
+  /**
+   * The EventCatcher server url
+   */
+  serverUrl: string,
+  /**
+   * The targets where the EventCatcher sender will be triggered (default `manual`).
+   * We send manually using logService.i('msg')`.send()` method
+   */
+  targets?: ('*' | LogLevel)[]
+};
+
 export type InitialConfig = {
   appName: string;
   version: string;
   hostname: string;
   console?: ConsoleConfig;
+  eventCatcher?: EventCatcherConfig;
   file?: FileConfig;
 };

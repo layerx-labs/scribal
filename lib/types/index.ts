@@ -108,9 +108,9 @@ export interface LogServiceChainExtensions {
         contents: any[]
       },
       /**
-       * ElasticSearch Config
+       * Logger Config
        */
-      config: ElasticSearchConfig) => void
+      config: InitialConfig) => void
   ) => void
 };
 

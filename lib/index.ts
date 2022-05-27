@@ -141,32 +141,38 @@ class LogService {
     });
   }
 
+  private $return(
+    ctx: LogService, 
+    loglevel: LogLevel,
+    contents: any[], 
+    config: InitialConfig
+  ): LogServiceChainExtensions {
+    return  {
+      send() {
+        contents.forEach((content) => {
+          ctx.sendLog(loglevel, content, true)
+        });  
+      },
+      call(callback) {
+          if ( typeof callback === 'function')
+            return callback({ contents, loglevel }, config);
+          console.error('Invalid parameter provided');
+      },
+    }
+  }
+
   /**
    * Log a content on debug level
    * @param contents all the contents you intend to log in console/file, each content can be of any type of data
    */
-  d(...contents: any[]): LogServiceChainExtensions {
+  d(...contents: any[]) {
     contents.forEach((content) => {
       this.log(LogLevel.debug, content);
     });
     
-    const self = this;
-    const elastic = this.globalConfig.elasticSearch;
-    return {
-      send() {
-        contents.forEach((content) => {
-          self.sendLog(LogLevel.debug, content, true)
-        });  
-      },
-      call(callback) {
-          if ( typeof callback !== 'function')
-            return console.error('Invalid parameter provided');
-          callback({
-            contents: contents,
-            loglevel: LogLevel.warning
-          }, elastic);
-      },
-    }
+    return this.$return(
+      this, LogLevel.debug, contents, this.globalConfig
+    );
   }
 
   /**
@@ -178,23 +184,9 @@ class LogService {
       this.log(LogLevel.info, content);
     });
     
-    const self = this;
-    const elastic = this.globalConfig.elasticSearch;
-    return {
-      send() {
-        contents.forEach((content) => {
-          self.sendLog(LogLevel.info, content, true)
-        });
-      },
-      call(callback) {
-          if ( typeof callback !== 'function')
-            return console.error('Invalid parameter provided');
-          callback({
-            contents: contents,
-            loglevel: LogLevel.warning
-          }, elastic);
-      },
-    }
+    return this.$return(
+      this, LogLevel.info, contents, this.globalConfig
+    );
   }
 
   /**
@@ -206,24 +198,9 @@ class LogService {
       this.log(LogLevel.warning, content);
     });
   
-    const self = this;
-  
-    const elastic = this.globalConfig.elasticSearch;
-    return {
-      send() {
-        contents.forEach((content) => {
-          self.sendLog(LogLevel.warning, content, true)
-        });  
-      },
-      call(callback) {
-          if ( typeof callback !== 'function')
-            return console.error('Invalid parameter provided');
-          callback({
-            contents: contents,
-            loglevel: LogLevel.warning
-          }, elastic);
-      },
-    }
+    return this.$return(
+      this, LogLevel.warning, contents, this.globalConfig
+    );
   }
 
   /**
@@ -235,23 +212,9 @@ class LogService {
       this.log(LogLevel.error, content);
     });
     
-    const self = this;
-    const elastic = this.globalConfig.elasticSearch;
-    return {
-      send() {
-        contents.forEach((content) => {
-          self.sendLog(LogLevel.error, content, true)
-        });  
-      },
-      call(callback) {
-          if ( typeof callback !== 'function')
-            return console.error('Invalid parameter provided');
-          callback({
-            contents: contents,
-            loglevel: LogLevel.warning
-          }, elastic);
-      },
-    }
+    return this.$return(
+      this, LogLevel.error, contents, this.globalConfig
+    );
   }
 
   private log(level: LogLevel, content: any) {

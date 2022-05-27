@@ -132,7 +132,7 @@ describe('When I configure to call custom function', () => {
 
   it('Send on `info`', () => {
     logger.i('Nevermind', 'its all okay 💯').call((options, config) => {
-      const elastic = config.client;
+      const elastic = config.elasticSearch.client;
 
       elastic.push(options.loglevel, {
         message: options.contents

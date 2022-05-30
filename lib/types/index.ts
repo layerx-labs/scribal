@@ -69,70 +69,25 @@ export type FileConfig = {
   logLevel?: LogLevel;
 };
 
-export type ElasticSearchConfig = {
-  /**
-   * The elastic search client
-   */
-  client: ElasticSearchClient,
-  /**
-   * The targets where the sender will be triggered (default `manual`).
-   * We send manually using logService.i('msg')`.send()` method.
-   */
-  targets?: ('*' | LogLevel)[]
-};
-
-export interface LogServiceChainExtensions {
-  /**
-   * Send the log to the Elastic Search Server
-   */
-  send: () => void,
-  /**
-   * Make a custom call according to developer will
-   */
-  call: (
-    /**
-     * Function that will be called
-     */
-    callback: (
-      /**
-      * Log Options 
-      */
-      options: {
-        /**
-         * Log Level
-         */
-        loglevel: LogLevel,
-        /**
-         * Contents to be logged 
-         */
-        contents: any[]
-      },
-      /**
-       * Logger Config
-       */
-      config: InitialConfig) => void
-  ) => void
-};
-
-export interface ElasticSearchClient {
-  push(index: string, body: object): Promise<boolean>;
-
-  ping(): Promise<void>;
-
-  updateStatus(status: any): Promise<void>;
-
-  pushTx(ctx: object, txId: string): Promise<void>;
-
-  getClient(): any;
-
-  isEnabled(): boolean;
-}
-
 export type InitialConfig = {
   appName: string;
   version: string;
   hostname: string;
   console?: ConsoleConfig;
-  elasticSearch?: ElasticSearchConfig;
   file?: FileConfig;
 };
+
+export type PluginConfig = {
+  silent: boolean,
+  level: LogLevel,
+  prettify?: boolean,
+  [property: string]: any
+}
+
+export type LoggerPlugin = {
+  [property: string]: any
+  debug: (...content: any[]) => void,
+  info: (...content: any[]) => void,
+  warning: (...content: any[]) => void,
+  error: (...content: any[]) => void,
+}

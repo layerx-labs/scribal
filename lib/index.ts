@@ -1,6 +1,6 @@
 import 'winston-daily-rotate-file';
 
-import { ConsoleConfig, FileConfig, InitialConfig, LogLevel } from '@types';
+import { ConsoleConfig, FileConfig, InitialConfig, LoggerPlugin, LogLevel, PluginConfig } from '@types';
 import sanitize from '@utils/sanitizers';
 import path from 'path';
 import process from 'process';
@@ -12,7 +12,7 @@ const { combine, timestamp, label, printf, prettyPrint } = format;
  *
  */
 class LogService {
-  private loggers: Logger[];
+  private loggers: LoggerPlugin[];
   private blackListParams: string[];
   private globalConfig: InitialConfig;
   private mask: string;
@@ -59,13 +59,12 @@ class LogService {
         message: messageInfo,
         ...restOfInfo
       } = info;
-      return `${timestampInfo} [${labelInfo.toString().padStart(5, ' ')}] ${levelInfo}: ${
-        Object.keys(restOfInfo).length
-          ? JSON.stringify({ message: messageInfo, ...restOfInfo })
-          : typeof messageInfo === 'string'
+      return `${timestampInfo} [${labelInfo.toString().padStart(5, ' ')}] ${levelInfo}: ${Object.keys(restOfInfo).length
+        ? JSON.stringify({ message: messageInfo, ...restOfInfo })
+        : typeof messageInfo === 'string'
           ? messageInfo
           : JSON.stringify(messageInfo)
-      }`;
+        }`;
     });
   }
 
@@ -129,6 +128,44 @@ class LogService {
         this.loggers.push(fileLogger);
       }
     }
+  }
+
+  addLogger(
+    loggerScopeFunction: (config: InitialConfig) => LoggerPlugin,
+    pluginConfig: PluginConfig) {
+    if (typeof loggerScopeFunction !== 'function')
+      return;
+
+    const loggerOptions = loggerScopeFunction.call(this, this.globalConfig);
+
+    if (loggerOptions == null)
+      return;
+
+    const loggerKeys = Object.keys(loggerOptions);
+    const requiredKeys = ['error', 'warn', 'info', 'debug'];
+    const isValidObject = requiredKeys
+      .every((method) => loggerKeys.indexOf(method) !== -1)
+
+    if (!isValidObject)
+      throw new Error(
+        `Invalid Logger, missing one or more of required keys: [${requiredKeys.join(', ')}]`
+      );
+
+    const { silent, level, prettify } = pluginConfig;
+
+    const loggerFormat = combine(
+      label({ label: process.pid.toString() }),
+      timestamp(),
+      prettify ? prettyPrint({ colorize: true, depth: 4 }) : this.simplifyPrint()
+    );
+
+    this.loggers.push({
+      ...pluginConfig,
+      ...loggerOptions,
+      silent: silent ?? false,
+      level: level ?? LogLevel.debug,
+      format: loggerFormat,
+    });
   }
 
   /**

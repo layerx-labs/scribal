@@ -76,3 +76,18 @@ export type InitialConfig = {
   console?: ConsoleConfig;
   file?: FileConfig;
 };
+
+export type PluginConfig = {
+  silent: boolean,
+  level: LogLevel,
+  prettify?: boolean,
+  [property: string]: any
+}
+
+export type LoggerPlugin = {
+  [property: string]: any
+  debug: (...content: any[]) => void,
+  info: (...content: any[]) => void,
+  warning: (...content: any[]) => void,
+  error: (...content: any[]) => void,
+}

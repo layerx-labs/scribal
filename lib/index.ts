@@ -1,7 +1,6 @@
 import 'winston-daily-rotate-file';
 
-import { ConsoleConfig, FileConfig, InitialConfig, LogLevel, LogServiceChainExtensions } from '@types';
-import ElasticSearch from '@utils/elastic-search';
+import { ConsoleConfig, FileConfig, InitialConfig, LoggerPlugin, LogLevel, PluginConfig } from '@types';
 import sanitize from '@utils/sanitizers';
 import path from 'path';
 import process from 'process';
@@ -13,7 +12,7 @@ const { combine, timestamp, label, printf, prettyPrint } = format;
  *
  */
 class LogService {
-  private loggers: Logger[];
+  private loggers: LoggerPlugin[];
   private blackListParams: string[];
   private globalConfig: InitialConfig;
   private mask: string;
@@ -60,12 +59,11 @@ class LogService {
         message: messageInfo,
         ...restOfInfo
       } = info;
-      return `${timestampInfo} [${labelInfo.toString().padStart(5, ' ')}] ${levelInfo}: ${
-        Object.keys(restOfInfo).length
-          ? JSON.stringify({ message: messageInfo, ...restOfInfo })
-          : typeof messageInfo === 'string'
-            ? messageInfo
-            : JSON.stringify(messageInfo)
+      return `${timestampInfo} [${labelInfo.toString().padStart(5, ' ')}] ${levelInfo}: ${Object.keys(restOfInfo).length
+        ? JSON.stringify({ message: messageInfo, ...restOfInfo })
+        : typeof messageInfo === 'string'
+          ? messageInfo
+          : JSON.stringify(messageInfo)
         }`;
     });
   }
@@ -132,6 +130,44 @@ class LogService {
     }
   }
 
+  addLogger(
+    loggerScopeFunction: (config: InitialConfig) => LoggerPlugin,
+    pluginConfig: PluginConfig) {
+    if (typeof loggerScopeFunction !== 'function')
+      return;
+
+    const loggerOptions = loggerScopeFunction.call(this, this.globalConfig);
+
+    if (loggerOptions == null)
+      return;
+
+    const loggerKeys = Object.keys(loggerOptions);
+    const requiredKeys = ['error', 'warn', 'info', 'debug'];
+    const isValidObject = requiredKeys
+      .every((method) => loggerKeys.indexOf(method) !== -1)
+
+    if (!isValidObject)
+      throw new Error(
+        `Invalid Logger, missing one or more of required keys: [${requiredKeys.join(', ')}]`
+      );
+
+    const { silent, level, prettify } = pluginConfig;
+
+    const loggerFormat = combine(
+      label({ label: process.pid.toString() }),
+      timestamp(),
+      prettify ? prettyPrint({ colorize: true, depth: 4 }) : this.simplifyPrint()
+    );
+
+    this.loggers.push({
+      ...pluginConfig,
+      ...loggerOptions,
+      silent: silent ?? false,
+      level: level ?? LogLevel.debug,
+      format: loggerFormat,
+    });
+  }
+
   /**
    * Change the level of logs
    */
@@ -139,26 +175,6 @@ class LogService {
     this.loggers.forEach((logger) => {
       logger.level = level;
     });
-  }
-
-  private $return(
-    ctx: LogService, 
-    loglevel: LogLevel,
-    contents: any[], 
-    config: InitialConfig
-  ): LogServiceChainExtensions {
-    return  {
-      send() {
-        contents.forEach((content) => {
-          ctx.sendLog(loglevel, content, true)
-        });  
-      },
-      call(callback) {
-          if ( typeof callback === 'function')
-            return callback({ contents, loglevel }, config);
-          console.error('Invalid parameter provided');
-      },
-    }
   }
 
   /**
@@ -169,100 +185,41 @@ class LogService {
     contents.forEach((content) => {
       this.log(LogLevel.debug, content);
     });
-    
-    return this.$return(
-      this, LogLevel.debug, contents, this.globalConfig
-    );
   }
 
   /**
    * Log a content on info level
    * @param contents all the contents you intend to log in console/file, each content can be of any type of data
    */
-  i(...contents: any[]): LogServiceChainExtensions {
+  i(...contents: any[]) {
     contents.forEach((content) => {
       this.log(LogLevel.info, content);
     });
-    
-    return this.$return(
-      this, LogLevel.info, contents, this.globalConfig
-    );
   }
 
   /**
    * Log a content on warning level
    * @param contents all the contents you intend to log in console/file, each content can be of any type of data
    */
-  w(...contents: any[]): LogServiceChainExtensions {
+  w(...contents: any[]) {
     contents.forEach((content) => {
       this.log(LogLevel.warning, content);
     });
-  
-    return this.$return(
-      this, LogLevel.warning, contents, this.globalConfig
-    );
   }
 
   /**
    * Log a content on error level
    * @param contents all the contents you intend to log in console/file, each content can be of any type of data
    */
-  e(...contents: any[]): LogServiceChainExtensions {
+  e(...contents: any[]) {
     contents.forEach((content) => {
       this.log(LogLevel.error, content);
     });
-    
-    return this.$return(
-      this, LogLevel.error, contents, this.globalConfig
-    );
   }
 
   private log(level: LogLevel, content: any) {
     const msgSanitized = sanitize(content, this.blackListParams, this.mask);
     this.logToLoggers(level, msgSanitized);
-    this.sendLog(level, content);
-  }
-
-  private sendLog(level: LogLevel, content: any, force?: boolean) {
-    // If elastic search is not configured, end the function here
-    if (!this.globalConfig.elasticSearch) return;
-
-    const targets = this.globalConfig.elasticSearch.targets || [];
-    // Sending to Elastic Search
-    const elastic = new ElasticSearch(this.globalConfig.elasticSearch);
-
-    let message = '';
-
-    switch (typeof content) {
-      case 'object':
-        message = JSON.stringify(content);
-        break;
-      case 'undefined':
-        message = 'Empty log message';
-        break;
-      default:
-        message = String(content);
-        break;
-    }
-
-    const send = () => {
-      elastic.send({
-        index: `${level}-log`,
-        message: message,
-      });
-    }
-
-    // Just send the log
-    if (force)
-      return send();
-
-    // Send all the logs
-    if (targets.includes('*'))
-      return send();
-
-    // Send only the 
-    if (targets.includes(level))
-      send();
   }
 
   private logToLoggers(level: LogLevel, msg: string) {

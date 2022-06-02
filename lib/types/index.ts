@@ -86,8 +86,8 @@ export type PluginConfig = {
 
 export type LoggerPlugin = {
   [property: string]: any
-  debug: (...content: any[]) => void,
-  info: (...content: any[]) => void,
-  warning: (...content: any[]) => void,
-  error: (...content: any[]) => void,
+  [LogLevel.debug]: (...contents: any[]) => void,
+  [LogLevel.info]: (...contents: any[]) => void,
+  [LogLevel.warning]: (...contents: any[]) => void,
+  [LogLevel.error]: (...contents: any[]) => void,
 }

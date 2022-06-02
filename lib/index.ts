@@ -136,12 +136,8 @@ class LogService {
     if (typeof loggerScopeFunction !== 'function')
       return;
 
-    const loggerOptions = loggerScopeFunction.call(this, this.globalConfig);
-
-    if (loggerOptions == null)
-      return;
-
-    const loggerKeys = Object.keys(loggerOptions);
+    const loggerPlugin = loggerScopeFunction.call(this, this.globalConfig);
+    const loggerKeys = Object.keys(loggerPlugin);
     const requiredKeys = ['error', 'warn', 'info', 'debug'];
     const isValidObject = requiredKeys
       .every((method) => loggerKeys.indexOf(method) !== -1)
@@ -153,18 +149,11 @@ class LogService {
 
     const { silent, level, prettify } = pluginConfig;
 
-    const loggerFormat = combine(
-      label({ label: process.pid.toString() }),
-      timestamp(),
-      prettify ? prettyPrint({ colorize: true, depth: 4 }) : this.simplifyPrint()
-    );
-
     this.loggers.push({
       ...pluginConfig,
-      ...loggerOptions,
+      ...loggerPlugin,
       silent: silent ?? false,
       level: level ?? LogLevel.debug,
-      format: loggerFormat,
     });
   }
 

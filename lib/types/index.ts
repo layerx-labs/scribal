@@ -80,7 +80,6 @@ export type InitialConfig = {
 export type PluginConfig = {
   silent: boolean,
   level: LogLevel,
-  prettify?: boolean,
   [property: string]: any
 }
 

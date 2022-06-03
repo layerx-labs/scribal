@@ -136,13 +136,13 @@ class LogService {
 
     const loggerPlugin = loggerScopeFunction.call(this, this.globalConfig);
     const loggerKeys = Object.keys(loggerPlugin ?? {});
-    const requiredKeys = ['error', 'warn', 'info', 'debug'];
-    const isValidObject = requiredKeys
+    const logLevel = ['error', 'warn', 'info', 'debug'];
+    const isValidObject = logLevel
       .every((method) => loggerKeys.indexOf(method) !== -1)
 
     if (!isValidObject)
       throw new Error(
-        `Invalid Logger, missing one or more of required keys: [${requiredKeys.join(', ')}]`
+        `Invalid Logger, missing one or more of required keys: [${logLevel.join(', ')}]`
       );
 
     const { silent, level } = pluginConfig;

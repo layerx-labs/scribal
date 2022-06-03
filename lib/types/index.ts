@@ -79,7 +79,7 @@ export type InitialConfig = {
 
 export type PluginConfig = {
   silent: boolean,
-  level: LogLevel,
+  level: `${LogLevel}`,
   [property: string]: any
 }
 

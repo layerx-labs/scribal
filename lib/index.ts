@@ -4,7 +4,7 @@ import { ConsoleConfig, FileConfig, InitialConfig, LoggerPlugin, LogLevel, Plugi
 import sanitize from '@utils/sanitizers';
 import path from 'path';
 import process from 'process';
-import { createLogger, format, Logger, transports } from 'winston';
+import { createLogger, format, transports } from 'winston';
 
 const { combine, timestamp, label, printf, prettyPrint } = format;
 
@@ -135,14 +135,17 @@ class LogService {
     pluginConfig: PluginConfig) {
 
     const loggerPlugin = loggerScopeFunction.call(this, this.globalConfig);
-    const loggerKeys = Object.keys(loggerPlugin ?? {});
+    const loggerPluginKeys = Object.keys(loggerPlugin ?? {});
     const logLevel = ['error', 'warn', 'info', 'debug'];
-    const isValidObject = logLevel
-      .every((method) => loggerKeys.indexOf(method) !== -1)
+    const missingMethods: String[] = [];
+    const isValidObject = logLevel.filter((method) => {
+      if (loggerPluginKeys.indexOf(method) === -1) missingMethods.push(method);
+      return true;
+    }).every((method) => loggerPluginKeys.indexOf(method) !== -1)
 
     if (!isValidObject)
       throw new Error(
-        `Invalid Logger, missing one or more of required keys: [${logLevel.join(', ')}]`
+        `Invalid Logger, missing one or more of required methods: [${missingMethods.join(', ')}]`
       );
 
     const { silent, level } = pluginConfig;

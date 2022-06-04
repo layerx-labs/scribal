@@ -11,7 +11,7 @@ const initConfig: InitialConfig = {
   },
   file: {
     silent: false,
-    logFileDir: path.resolve('lib-tester/logs'),
+    logFileDir: path.resolve('logs'),
   },
 };
 

@@ -12,7 +12,7 @@ import {
 import sanitize from '@utils/sanitizers';
 import path from 'path';
 import process from 'process';
-import { createLogger, format, transports } from 'winston';
+import { createLogger, format, Logger, transports } from 'winston';
 
 const { combine, timestamp, label, printf, prettyPrint } = format;
 
@@ -139,19 +139,21 @@ class LogService {
     }
   }
 
-  private applyFormat(logger: LoggerPlugin, formatOptions: FormatOptions) {
+  private overwriteMethods(logger: Logger, plugin: LoggerPlugin, formatOptions?: FormatOptions) {
     const { transform } = combine(
       label({ label: process.pid.toString() }),
       timestamp(),
-      formatOptions.prettify ? prettyPrint({ depth: 4 }) : this.simplifyPrint()
+      formatOptions?.prettify ? prettyPrint({ depth: 4 }) : this.simplifyPrint()
     );
 
     for (const level of Object.values(LogLevel)) {
-      const oldLoggerMethod = logger[level];
       logger[level] = (msg: any) => {
-        const transformedMsg = transform({ level: level, message: msg });
-        const symbolKey = Object.getOwnPropertySymbols(transformedMsg)[0];
-        oldLoggerMethod((transformedMsg as any)[symbolKey]);
+        if (formatOptions) {
+          const transformedMsg = transform({ level: level, message: msg });
+          const symbolKey = Object.getOwnPropertySymbols(transformedMsg)[0];
+          return plugin.log(level, (transformedMsg as any)[symbolKey]) as any;
+        }
+        return plugin.log(level, msg) as any;
       };
     }
   }
@@ -160,27 +162,20 @@ class LogService {
     loggerPluginMaker: (config: InitialConfig) => LoggerPlugin,
     pluginConfig: PluginConfig = { level: LogLevel.debug, silent: false }
   ) {
-    const loggerPlugin = loggerPluginMaker.call(this, this.globalConfig);
-    const loggerPluginMethods = Object.keys(loggerPlugin ?? {});
-    const requiredMethods = Object.values(LogLevel);
+    const loggerPlugin: LoggerPlugin = loggerPluginMaker.call(this, this.globalConfig);
 
-    const missingMethods = requiredMethods.filter(
-      (method) => !loggerPluginMethods.includes(method)
-    );
-
-    if (missingMethods.length)
+    if (!loggerPlugin.hasOwnProperty('log'))
       throw new Error(
-        `Invalid Logger, missing these required methods: [${missingMethods.join(', ')}]`
+        `Invalid Logger, missing the required method: "log(level: string, msg: any)=>void"`
       );
 
-    const newLogger = {
-      ...pluginConfig,
-      ...loggerPlugin,
-    };
+    const newLogger = createLogger({
+      level: pluginConfig.level,
+      silent: pluginConfig.silent,
+      transports: [new transports.Console({ silent: true })],
+    });
 
-    if (pluginConfig.format) {
-      this.applyFormat(newLogger, pluginConfig.format);
-    }
+    this.overwriteMethods(newLogger, loggerPlugin, pluginConfig.format);
 
     this.loggers.push(newLogger);
   }

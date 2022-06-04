@@ -16,23 +16,16 @@ const resetSut = () => {
   sut = new LogService();
 };
 
-const loggerPluginMaker = (config: any) => {
-  const log = (index: string, content: any) => {
-    dataStorage.push(index, {
+const loggerPluginMaker = (config: any) => ({
+  log: (level: string, content: any) => {
+    dataStorage.push(`${level}-log`, {
       message: content,
       createdAt: new Date().toISOString(),
       appName: config.appName,
       version: config.version,
     });
-  };
-
-  return {
-    error: (content: any) => log('error-log', content),
-    warn: (content: any) => log('warn-log', content),
-    info: (content: any) => log('info-log', content),
-    debug: (content: any) => log('debug-log', content),
-  };
-};
+  },
+});
 
 afterEach(() => {
   jest.resetAllMocks();
@@ -123,7 +116,7 @@ describe('When configured with format options', () => {
       expect.objectContaining({
         appName: initConfig.appName,
         version: initConfig.version,
-        message: expect.stringMatching(new RegExp(`${dateTimeRegex} \\[\\d+\\] info: Nevermind`)),
+        message: expect.stringMatching(new RegExp(`${dateTimeRegex} \\[.+\\] info: Nevermind`)),
       })
     );
   });
@@ -138,7 +131,7 @@ describe('When configured with format options', () => {
         version: initConfig.version,
         message: expect.stringMatching(
           new RegExp(
-            `${dateTimeRegex} \\[\\d+\\] debug: \\{\\"name\\":\\"taikai\\",\\"products\\":\\[\\"hackathon\\",\\"dappkit\\"\\]\\}`
+            `${dateTimeRegex} \\[.+\\] debug: \\{\\"name\\":\\"taikai\\",\\"products\\":\\[\\"hackathon\\",\\"dappkit\\"\\]\\}`
           )
         ),
       })
@@ -146,21 +139,17 @@ describe('When configured with format options', () => {
   });
 });
 
-describe('When added a logger with insufficient methods', () => {
+describe('When added a logger with missing required methods', () => {
   beforeAll(() => {
     resetSut();
     sut.init(initConfig);
   });
 
   it('Throw an error indicating the missing methods', () => {
-    const addIncompleteLogger = () =>
-      sut.addLogger(() => ({
-        error: () => {},
-        warn: () => {},
-      }));
+    const addIncompleteLogger = () => sut.addLogger(() => ({}));
 
     expect(addIncompleteLogger).toThrowError(
-      /Invalid Logger, missing these required methods: \[(info|debug|\,\s){1,3}\]/
+      /Invalid Logger, missing the required method: \"log\(level: string, msg: any\)=>void\"/
     );
   });
 });

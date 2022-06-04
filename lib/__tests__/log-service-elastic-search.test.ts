@@ -6,18 +6,19 @@ const initConfig = {
   version: '1.0',
 };
 
-const elasticClientMock = {
+const dataStorage = {
   push: jest.fn().mockResolvedValue(true),
 };
+
 let sut = new LogService();
 
 const resetSut = () => {
   sut = new LogService();
 };
 
-const elasticLogger = (config: any) => {
+const loggerPluginMaker = (config: any) => {
   const log = (index: string, content: any) => {
-    elasticClientMock.push(index, {
+    dataStorage.push(index, {
       message: content,
       createdAt: new Date().toISOString(),
       appName: config.appName,
@@ -41,18 +42,18 @@ describe('When configured with silent "false"', () => {
   beforeAll(() => {
     sut.init(initConfig);
 
-    const elasticLoggerConfig = {
+    const pluginConfig = {
       silent: false,
       level: 'debug',
     };
 
-    sut.addLogger(elasticLogger, elasticLoggerConfig);
+    sut.addLogger(loggerPluginMaker, pluginConfig);
   });
 
   it('Send on `info`', () => {
     sut.i('Nevermind', 'its all okay 💯');
-    expect(elasticClientMock.push).toHaveBeenCalledTimes(2);
-    expect(elasticClientMock.push).toHaveBeenCalledWith(
+    expect(dataStorage.push).toHaveBeenCalledTimes(2);
+    expect(dataStorage.push).toHaveBeenCalledWith(
       'info-log',
       expect.objectContaining({ appName: initConfig.appName, version: initConfig.version })
     );
@@ -60,8 +61,8 @@ describe('When configured with silent "false"', () => {
 
   it('Send on `debug`', () => {
     sut.d('I am being debugged');
-    expect(elasticClientMock.push).toHaveBeenCalledTimes(1);
-    expect(elasticClientMock.push).toHaveBeenCalledWith(
+    expect(dataStorage.push).toHaveBeenCalledTimes(1);
+    expect(dataStorage.push).toHaveBeenCalledWith(
       'debug-log',
       expect.objectContaining({
         appName: initConfig.appName,
@@ -73,8 +74,8 @@ describe('When configured with silent "false"', () => {
 
   it('Send on `warning`', () => {
     sut.w('You are about to love this lib');
-    expect(elasticClientMock.push).toHaveBeenCalledTimes(1);
-    expect(elasticClientMock.push).toHaveBeenCalledWith(
+    expect(dataStorage.push).toHaveBeenCalledTimes(1);
+    expect(dataStorage.push).toHaveBeenCalledWith(
       'warn-log',
       expect.objectContaining({
         appName: initConfig.appName,
@@ -86,8 +87,8 @@ describe('When configured with silent "false"', () => {
 
   it('Send on `error`', () => {
     sut.e('Oh no! Something went wrong');
-    expect(elasticClientMock.push).toHaveBeenCalledTimes(1);
-    expect(elasticClientMock.push).toHaveBeenCalledWith(
+    expect(dataStorage.push).toHaveBeenCalledTimes(1);
+    expect(dataStorage.push).toHaveBeenCalledWith(
       'error-log',
       expect.objectContaining({
         appName: initConfig.appName,
@@ -105,19 +106,19 @@ describe('When configured with format options', () => {
     resetSut();
     sut.init(initConfig);
 
-    const elasticLoggerConfig = {
+    const pluginConfig = {
       silent: false,
       level: 'debug',
       format: { prettify: false },
     };
 
-    sut.addLogger(elasticLogger, elasticLoggerConfig);
+    sut.addLogger(loggerPluginMaker, pluginConfig);
   });
 
   it('Send on `info`', () => {
     sut.i('Nevermind');
-    expect(elasticClientMock.push).toHaveBeenCalledTimes(1);
-    expect(elasticClientMock.push).toHaveBeenCalledWith(
+    expect(dataStorage.push).toHaveBeenCalledTimes(1);
+    expect(dataStorage.push).toHaveBeenCalledWith(
       'info-log',
       expect.objectContaining({
         appName: initConfig.appName,
@@ -129,8 +130,8 @@ describe('When configured with format options', () => {
 
   it('Send on `debug`', () => {
     sut.d({ name: 'taikai', products: ['hackathon', 'dappkit'] });
-    expect(elasticClientMock.push).toHaveBeenCalledTimes(1);
-    expect(elasticClientMock.push).toHaveBeenCalledWith(
+    expect(dataStorage.push).toHaveBeenCalledTimes(1);
+    expect(dataStorage.push).toHaveBeenCalledWith(
       'debug-log',
       expect.objectContaining({
         appName: initConfig.appName,

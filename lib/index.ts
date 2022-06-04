@@ -157,10 +157,10 @@ class LogService {
   }
 
   addLogger(
-    loggerScopeFunction: (config: InitialConfig) => LoggerPlugin,
+    loggerPluginMaker: (config: InitialConfig) => LoggerPlugin,
     pluginConfig: PluginConfig = { level: LogLevel.debug, silent: false }
   ) {
-    const loggerPlugin = loggerScopeFunction.call(this, this.globalConfig);
+    const loggerPlugin = loggerPluginMaker.call(this, this.globalConfig);
     const loggerPluginMethods = Object.keys(loggerPlugin ?? {});
     const requiredMethods = Object.values(LogLevel);
 

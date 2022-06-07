@@ -1,10 +1,18 @@
 import 'winston-daily-rotate-file';
 
-import { ConsoleConfig, FileConfig, InitialConfig, LoggerPlugin, LogLevel, PluginConfig } from '@types';
+import {
+  ConsoleConfig,
+  FileConfig,
+  FormatOptions,
+  InitialConfig,
+  LoggerPlugin,
+  LogLevel,
+  PluginConfig,
+} from '@types';
 import sanitize from '@utils/sanitizers';
 import path from 'path';
 import process from 'process';
-import { createLogger, format, transports } from 'winston';
+import { createLogger, format, Logger, transports } from 'winston';
 
 const { combine, timestamp, label, printf, prettyPrint } = format;
 
@@ -59,25 +67,26 @@ class LogService {
         message: messageInfo,
         ...restOfInfo
       } = info;
-      return `${timestampInfo} [${labelInfo.toString().padStart(5, ' ')}] ${levelInfo}: ${Object.keys(restOfInfo).length
-        ? JSON.stringify({ message: messageInfo, ...restOfInfo })
-        : typeof messageInfo === 'string'
+      return `${timestampInfo} [${labelInfo.toString().padStart(5, ' ')}] ${levelInfo}: ${
+        Object.keys(restOfInfo).length
+          ? JSON.stringify({ message: messageInfo, ...restOfInfo })
+          : typeof messageInfo === 'string'
           ? messageInfo
           : JSON.stringify(messageInfo)
-        }`;
+      }`;
     });
   }
 
   private addConsoleLogger(consoleConfig: ConsoleConfig) {
-    if (!consoleConfig?.silent) {
-      const myFormat = combine(
+    if (consoleConfig && !consoleConfig.silent) {
+      const formatter = combine(
         label({ label: process.pid.toString() }),
         timestamp(),
         consoleConfig.prettify ? prettyPrint({ colorize: true, depth: 4 }) : this.simplifyPrint()
       );
       const consoleLogger = createLogger({
         level: consoleConfig.logLevel ?? LogLevel.debug,
-        format: myFormat,
+        format: formatter,
         transports: [new transports.Console()],
         silent: consoleConfig.silent,
       });
@@ -95,7 +104,7 @@ class LogService {
         version: this.globalConfig.version,
       }));
 
-      const myFormat = combine(simpleFormatter(), timestamp(), format.json());
+      const formatter = combine(simpleFormatter(), timestamp(), format.json());
       if (fileConfig.logDailyRotation) {
         const transport = new transports.DailyRotateFile({
           filename: `${this.globalConfig.appName}-%DATE%.log`,
@@ -108,7 +117,7 @@ class LogService {
 
         const fileLogger = createLogger({
           level: fileConfig.logLevel ?? LogLevel.debug,
-          format: myFormat,
+          format: formatter,
           transports: [transport],
           silent: fileConfig.silent,
         });
@@ -121,7 +130,7 @@ class LogService {
         );
         const fileLogger = createLogger({
           level: fileConfig.logLevel ?? LogLevel.debug,
-          format: myFormat,
+          format: formatter,
           transports: [new transports.File({ filename: logPath })],
           silent: fileConfig.silent,
         });
@@ -130,32 +139,45 @@ class LogService {
     }
   }
 
+  private overwriteMethods(logger: Logger, plugin: LoggerPlugin, formatOptions?: FormatOptions) {
+    const { transform } = combine(
+      label({ label: process.pid.toString() }),
+      timestamp(),
+      formatOptions?.prettify ? prettyPrint({ depth: 4 }) : this.simplifyPrint()
+    );
+
+    for (const level of Object.values(LogLevel)) {
+      logger[level] = (msg: any) => {
+        if (formatOptions) {
+          const transformedMsg = transform({ level: level, message: msg });
+          const symbolKey = Object.getOwnPropertySymbols(transformedMsg)[0];
+          return plugin.log(level, (transformedMsg as any)[symbolKey]) as any;
+        }
+        return plugin.log(level, msg) as any;
+      };
+    }
+  }
+
   addLogger(
-    loggerScopeFunction: (config: InitialConfig) => LoggerPlugin,
-    pluginConfig: PluginConfig) {
+    loggerPluginMaker: (config: InitialConfig) => LoggerPlugin,
+    pluginConfig: PluginConfig = { level: LogLevel.debug, silent: false }
+  ) {
+    const loggerPlugin: LoggerPlugin = loggerPluginMaker.call(this, this.globalConfig);
 
-    const loggerPlugin = loggerScopeFunction.call(this, this.globalConfig);
-    const loggerPluginKeys = Object.keys(loggerPlugin ?? {});
-    const logLevel = ['error', 'warn', 'info', 'debug'];
-    const missingMethods: String[] = [];
-    const isValidObject = logLevel.filter((method) => {
-      if (loggerPluginKeys.indexOf(method) === -1) missingMethods.push(method);
-      return true;
-    }).every((method) => loggerPluginKeys.indexOf(method) !== -1)
-
-    if (!isValidObject)
+    if (!loggerPlugin.hasOwnProperty('log'))
       throw new Error(
-        `Invalid Logger, missing one or more of required methods: [${missingMethods.join(', ')}]`
+        `Invalid Logger, missing the required method: "log(level: string, msg: any)=>void"`
       );
 
-    const { silent, level } = pluginConfig;
-
-    this.loggers.push({
-      ...pluginConfig,
-      ...loggerPlugin,
-      silent: silent ?? false,
-      level: level ?? LogLevel.debug,
+    const newLogger = createLogger({
+      level: pluginConfig.level,
+      silent: pluginConfig.silent,
+      transports: [new transports.Console({ silent: true })],
     });
+
+    this.overwriteMethods(newLogger, loggerPlugin, pluginConfig.format);
+
+    this.loggers.push(newLogger);
   }
 
   /**

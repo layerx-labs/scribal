@@ -1,4 +1,3 @@
-import { createLogger } from 'winston';
 import LogService from '../index';
 
 const initConfig = {
@@ -7,69 +6,150 @@ const initConfig = {
   version: '1.0',
 };
 
-const elasticClientMock = {
-  push: jest.fn(),
+const dataStorage = {
+  push: jest.fn().mockResolvedValue(true),
 };
 
-let logger: LogService;
+let sut = new LogService();
 
-beforeEach(() => {
-  elasticClientMock.push = jest.fn();
-  
-  logger = new LogService();
-  logger.init({
-    ...initConfig,
-    console: {
-      silent: false,
-      prettify: false,
-    }
-  });
+const resetSut = () => {
+  sut = new LogService();
+};
 
-  const elasticLogger = (config) => {
-    const log = (index: string, content: any) => {
-      elasticClientMock.push(index,
-        {
-          message: content,
-          createdAt: new Date().toISOString(),
-          appName: config.appName,
-          version: config.version,
-        });
-    };
-
-    return {
-      error: (content: any) => log('error-log', content),
-      warn: (content: any) => log('warn-log', content),
-      info: (content: any) => log('info-log', content),
-      debug: (content: any) => log('debug-log', content)
-    }
-  };
-  
-  const elasticLoggerConfig = {
-    silent: false,
-    level: 'debug',
-  };
-
-  logger.addLogger(elasticLogger, elasticLoggerConfig);
+const loggerPluginMaker = (config: any) => ({
+  log: (level: string, content: any) => {
+    dataStorage.push(`${level}-log`, {
+      message: content,
+      createdAt: new Date().toISOString(),
+      appName: config.appName,
+      version: config.version,
+    });
+  },
 });
 
-describe('When I configure with silent "false"', () => {
+afterEach(() => {
+  jest.resetAllMocks();
+});
+
+describe('When configured with silent "false"', () => {
+  beforeAll(() => {
+    sut.init(initConfig);
+
+    const pluginConfig = {
+      silent: false,
+      level: 'debug',
+    };
+
+    sut.addLogger(loggerPluginMaker, pluginConfig);
+  });
+
   it('Send on `info`', () => {
-    logger.i('Nevermind', 'its all okay 💯');
-    expect(elasticClientMock.push).toHaveBeenCalledTimes(2);
+    sut.i('Nevermind', 'its all okay 💯');
+    expect(dataStorage.push).toHaveBeenCalledTimes(2);
+    expect(dataStorage.push).toHaveBeenCalledWith(
+      'info-log',
+      expect.objectContaining({ appName: initConfig.appName, version: initConfig.version })
+    );
   });
 
   it('Send on `debug`', () => {
-    logger.d('I am being debugged 🚫🐞');
-    expect(elasticClientMock.push).toHaveBeenCalled();
+    sut.d('I am being debugged');
+    expect(dataStorage.push).toHaveBeenCalledTimes(1);
+    expect(dataStorage.push).toHaveBeenCalledWith(
+      'debug-log',
+      expect.objectContaining({
+        appName: initConfig.appName,
+        version: initConfig.version,
+        message: 'I am being debugged',
+      })
+    );
   });
 
   it('Send on `warning`', () => {
-    logger.w('You are about to love this lib ⚠');
-    expect(elasticClientMock.push).toHaveBeenCalled();
+    sut.w('You are about to love this lib');
+    expect(dataStorage.push).toHaveBeenCalledTimes(1);
+    expect(dataStorage.push).toHaveBeenCalledWith(
+      'warn-log',
+      expect.objectContaining({
+        appName: initConfig.appName,
+        version: initConfig.version,
+        message: 'You are about to love this lib',
+      })
+    );
   });
 
   it('Send on `error`', () => {
-    logger.e('Oh no! Something went wrong 😱');
-    expect(elasticClientMock.push).toHaveBeenCalled();
+    sut.e('Oh no! Something went wrong');
+    expect(dataStorage.push).toHaveBeenCalledTimes(1);
+    expect(dataStorage.push).toHaveBeenCalledWith(
+      'error-log',
+      expect.objectContaining({
+        appName: initConfig.appName,
+        version: initConfig.version,
+        message: 'Oh no! Something went wrong',
+      })
+    );
+  });
+});
+
+describe('When configured with format options', () => {
+  const dateTimeRegex = '\\d{4}\\-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{1,3}Z';
+
+  beforeAll(() => {
+    resetSut();
+    sut.init(initConfig);
+
+    const pluginConfig = {
+      silent: false,
+      level: 'debug',
+      format: { prettify: false },
+    };
+
+    sut.addLogger(loggerPluginMaker, pluginConfig);
+  });
+
+  it('Send on `info`', () => {
+    sut.i('Nevermind');
+    expect(dataStorage.push).toHaveBeenCalledTimes(1);
+    expect(dataStorage.push).toHaveBeenCalledWith(
+      'info-log',
+      expect.objectContaining({
+        appName: initConfig.appName,
+        version: initConfig.version,
+        message: expect.stringMatching(new RegExp(`${dateTimeRegex} \\[.+\\] info: Nevermind`)),
+      })
+    );
+  });
+
+  it('Send on `debug`', () => {
+    sut.d({ name: 'taikai', products: ['hackathon', 'dappkit'] });
+    expect(dataStorage.push).toHaveBeenCalledTimes(1);
+    expect(dataStorage.push).toHaveBeenCalledWith(
+      'debug-log',
+      expect.objectContaining({
+        appName: initConfig.appName,
+        version: initConfig.version,
+        message: expect.stringMatching(
+          new RegExp(
+            `${dateTimeRegex} \\[.+\\] debug: \\{\\"name\\":\\"taikai\\",\\"products\\":\\[\\"hackathon\\",\\"dappkit\\"\\]\\}`
+          )
+        ),
+      })
+    );
+  });
+});
+
+describe('When added a logger with missing required methods', () => {
+  beforeAll(() => {
+    resetSut();
+    sut.init(initConfig);
+  });
+
+  it('Throw an error indicating the missing methods', () => {
+    const addIncompleteLogger = () => sut.addLogger(() => ({}));
+
+    expect(addIncompleteLogger).toThrowError(
+      /Invalid Logger, missing the required method: \"log\(level: string, msg: any\)=>void\"/
+    );
   });
 });

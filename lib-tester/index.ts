@@ -1,4 +1,4 @@
-import Logger, { InitialConfig } from '@taikai/log-service';
+import Logger, { InitialConfig } from '@taikai/scribal';
 import path from 'path';
 
 const initConfig: InitialConfig = {
@@ -11,7 +11,7 @@ const initConfig: InitialConfig = {
   },
   file: {
     silent: false,
-    logFileDir: path.resolve('lib-tester/logs'),
+    logFileDir: path.resolve('logs'),
   },
 };
 

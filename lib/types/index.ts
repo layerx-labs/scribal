@@ -76,3 +76,19 @@ export type InitialConfig = {
   console?: ConsoleConfig;
   file?: FileConfig;
 };
+
+export type FormatOptions = {
+  prettify: boolean;
+};
+
+export type PluginConfig = {
+  silent?: boolean;
+  level?: `${LogLevel}`;
+  format?: FormatOptions;
+  [property: string]: any;
+};
+
+export type LoggerPlugin = {
+  [property: string]: any;
+  log: (level: `${LogLevel}`, msg: any) => void;
+};

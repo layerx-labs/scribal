@@ -1,6 +1,14 @@
 import 'winston-daily-rotate-file';
 
-import { ConsoleConfig, FileConfig, InitialConfig, LogLevel } from '@types';
+import {
+  ConsoleConfig,
+  FileConfig,
+  FormatOptions,
+  InitialConfig,
+  LoggerPlugin,
+  LogLevel,
+  PluginConfig,
+} from '@types';
 import sanitize from '@utils/sanitizers';
 import path from 'path';
 import process from 'process';
@@ -12,7 +20,7 @@ const { combine, timestamp, label, printf, prettyPrint } = format;
  *
  */
 class LogService {
-  private loggers: Logger[];
+  private loggers: LoggerPlugin[];
   private blackListParams: string[];
   private globalConfig: InitialConfig;
   private mask: string;
@@ -70,15 +78,15 @@ class LogService {
   }
 
   private addConsoleLogger(consoleConfig: ConsoleConfig) {
-    if (!consoleConfig?.silent) {
-      const myFormat = combine(
+    if (consoleConfig && !consoleConfig.silent) {
+      const formatter = combine(
         label({ label: process.pid.toString() }),
         timestamp(),
         consoleConfig.prettify ? prettyPrint({ colorize: true, depth: 4 }) : this.simplifyPrint()
       );
       const consoleLogger = createLogger({
         level: consoleConfig.logLevel ?? LogLevel.debug,
-        format: myFormat,
+        format: formatter,
         transports: [new transports.Console()],
         silent: consoleConfig.silent,
       });
@@ -96,7 +104,7 @@ class LogService {
         version: this.globalConfig.version,
       }));
 
-      const myFormat = combine(simpleFormatter(), timestamp(), format.json());
+      const formatter = combine(simpleFormatter(), timestamp(), format.json());
       if (fileConfig.logDailyRotation) {
         const transport = new transports.DailyRotateFile({
           filename: `${this.globalConfig.appName}-%DATE%.log`,
@@ -109,7 +117,7 @@ class LogService {
 
         const fileLogger = createLogger({
           level: fileConfig.logLevel ?? LogLevel.debug,
-          format: myFormat,
+          format: formatter,
           transports: [transport],
           silent: fileConfig.silent,
         });
@@ -122,13 +130,54 @@ class LogService {
         );
         const fileLogger = createLogger({
           level: fileConfig.logLevel ?? LogLevel.debug,
-          format: myFormat,
+          format: formatter,
           transports: [new transports.File({ filename: logPath })],
           silent: fileConfig.silent,
         });
         this.loggers.push(fileLogger);
       }
     }
+  }
+
+  private overwriteMethods(logger: Logger, plugin: LoggerPlugin, formatOptions?: FormatOptions) {
+    const { transform } = combine(
+      label({ label: process.pid.toString() }),
+      timestamp(),
+      formatOptions?.prettify ? prettyPrint({ depth: 4 }) : this.simplifyPrint()
+    );
+
+    for (const level of Object.values(LogLevel)) {
+      logger[level] = (msg: any) => {
+        if (formatOptions) {
+          const transformedMsg = transform({ level: level, message: msg });
+          const symbolKey = Object.getOwnPropertySymbols(transformedMsg)[0];
+          return plugin.log(level, (transformedMsg as any)[symbolKey]) as any;
+        }
+        return plugin.log(level, msg) as any;
+      };
+    }
+  }
+
+  addLogger(
+    loggerPluginMaker: (config: InitialConfig) => LoggerPlugin,
+    pluginConfig: PluginConfig = { level: LogLevel.debug, silent: false }
+  ) {
+    const loggerPlugin: LoggerPlugin = loggerPluginMaker.call(this, this.globalConfig);
+
+    if (!loggerPlugin.hasOwnProperty('log'))
+      throw new Error(
+        `Invalid Logger, missing the required method: "log(level: string, msg: any)=>void"`
+      );
+
+    const newLogger = createLogger({
+      level: pluginConfig.level,
+      silent: pluginConfig.silent,
+      transports: [new transports.Console({ silent: true })],
+    });
+
+    this.overwriteMethods(newLogger, loggerPlugin, pluginConfig.format);
+
+    this.loggers.push(newLogger);
   }
 
   /**

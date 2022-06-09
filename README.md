@@ -1,9 +1,9 @@
-# Log-Service
+# Scribal
 
 Fast and easily write your logs into files and on console, it works with `Ts` as well with `Js` projects.
 
 ```ts
-import Logger, { InitialConfig } from '@taikai/log-service';
+import Scribal, { InitialConfig } from '@taikai/scribal';
 
 /*
  * Create the configs for your initializing loggers (console and file)
@@ -22,9 +22,9 @@ const initConfig: InitialConfig = {
 
 const blackListKeys = ['password', 'phoneNumber', 'address'];
 
-const logger = new Logger(blackListKeys, '*');
-logger.init(initConfig);
-logger.i('Log something funny 🚀');
+const scribal = new Scribal(blackListKeys, '*');
+scribal.init(initConfig);
+scribal.i('Log something funny 🚀');
 
 ...
 ```
@@ -42,7 +42,7 @@ If this is a brand new project, make sure to create a package.json first with th
 Installation is done using the npm install command:
 
 ```bash
-$ npm i @taikai/log-service
+$ npm i @taikai/scribal
 ```
 
 ### Step 2: Log something with your logger
@@ -52,13 +52,13 @@ $ npm i @taikai/log-service
 use the import statement (in case of a typescript project):
 
 ```ts
-import Logger, { InitialConfig } from '@taikai/log-service';
+import Scribal, { InitialConfig } from '@taikai/scribal';
 ```
 
 or require (if you are working in a js project):
 
 ```js
-const { default: Logger } = require('@taikai/log-service');
+const { default: Scribal } = require('@taikai/scribal');
 ```
 
 #### create a new instance of your Logger
@@ -80,36 +80,74 @@ const initConfig: InitialConfig = {
 };
 
 const blackListKeys = ['password', 'phoneNumber', 'address'];
-const logger = new Logger(blackListKeys, '*');
-logger.init(initConfig);
+const scribal = new Scribal(blackListKeys, '*');
+scribal.init(initConfig);
 ```
 
 :bulb: **Hint:** If you are using a js project, you don't need to specify the types of variables :wink:.
 
 #### start logging
 
-After initiated yhe logger calling the method .init() you can start writing log messages into your files and/or your console depending on the values you set on the initConfig variable:
+After initiated the logger calling the method .init() you can start writing log messages into your files and/or your console depending on the values you set on the initConfig variable:
 
 ```ts
-logger.i('Log something funny 🚀');
-logger.d('I am being debugged 🚫🐞');
-logger.w('You are about to love this lib ⚠');
-logger.e('Oh no! Something went wrong 😱');
+scribal.i('Log something funny 🚀');
+scribal.d('I am being debugged 🚫🐞');
+scribal.w('You are about to love this lib ⚠');
+scribal.e('Oh no! Something went wrong 😱');
 ```
 
-### :ice_cream: BONUS: More cool ways to use the Log-Service library!
+#### plugin a custom logger
 
-Find the API docs references on the following link: [API Docs](https://github.com/taikai/log-service)
+Lets say you wish stream your log messages to a different output, maybe storing them in a database or sending them to a different service, you can achieve this by using the `addLogger` method:
+
+```ts
+const dataStorage = {
+  create: async (_level, _body) => {
+    console.log('dataStorage.create was called');
+  },
+};
+
+/**
+ *
+ * @param config the configuration passed on init method
+ * @returns an object that must contain the log method
+ */
+const customLoggerMaker = (config: InitialConfig) => ({
+  // It will be called in sync with the log methods i(), d(), w(), e(),...
+  log: (level: string, content: any) => {
+    dataStorage
+      .create(`${level}-log`, {
+        message: content,
+        createdAt: new Date().toISOString(),
+        appName: config.appName,
+        version: config.version,
+      })
+      .then();
+  },
+});
+
+const customLoggerConfig = {
+  silent: false,
+  level: 'debug',
+};
+
+scribal.addLogger(customLoggerMaker, customLoggerConfig);
+```
+
+### :ice_cream: BONUS: More cool ways to use the Scribal library!
+
+Find the API docs references on the following link: [API Docs](https://github.com/taikai/scribal)
 
 ## Contributing
 
 The way you can contribute to this project is **submitting new features** or **fixing bugs.**
 
-To get started you have to clone this repo to your machine; open your terminal on the folder you want to clone into, and enter the following commands:
+To get started you have to clone this repo to your machine or fork to your personal account; open your terminal on the folder you want to clone into, and enter the following commands:
 
 ```bash
-$ git clone https://github.com/taikai/log-service.git
-$ cd log-service
+$ git clone https://github.com/taikai/scribal.git
+$ cd scribal
 $ npm install
 ```
 
@@ -128,6 +166,6 @@ There is a nested project called **lib-tester** where you can play and see how w
 
 ```json
 ...
-"@taikai/log-service": "file:../taikai-log-service-<VERSION>.tgz"
+"@taikai/scribal": "file:../taikai-scribal-<VERSION>.tgz"
 ...
 ```

@@ -1,7 +1,7 @@
 {
-  "name": "@taikai/log-service",
-  "version": "1.2.0",
-  "description": "Write logs in a file/console",
+  "name": "@taikai/scribal",
+  "version": "1.0.0",
+  "description": "Write logs in a file/console or a custom output",
   "main": "dist/lib/index.js",
   "types": "dist/lib/index.d.ts",
   "scripts": {
@@ -17,19 +17,22 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/taikai/log-service.git"
+    "url": "git+https://github.com/taikai/scribal.git"
   },
   "keywords": [
     "logs",
     "console",
-    "log file"
+    "log file",
+    "logger",
+    "logger plugin",
+    "custom logger"
   ],
   "author": "JoseMarshall <josemar@taikai.network> (https://github.com/JoseMarshall)",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/taikai/log-service/issues"
+    "url": "https://github.com/taikai/scribal/issues"
   },
-  "homepage": "https://github.com/taikai/log-service#readme",
+  "homepage": "https://github.com/taikai/scribal#readme",
   "dependencies": {
     "winston": "^3.7.2",
     "winston-daily-rotate-file": "^4.6.1"

@@ -7,7 +7,7 @@ const initConfig = {
 };
 
 const dataStorage = {
-  push: jest.fn().mockResolvedValue(true),
+  push: jest.fn().mockImplementation(async (_level, _message) => true),
 };
 
 let sut = new LogService();
@@ -18,17 +18,19 @@ const resetSut = () => {
 
 const loggerPluginMaker = (config: any) => ({
   log: (level: string, content: any) => {
-    dataStorage.push(`${level}-log`, {
-      message: content,
-      createdAt: new Date().toISOString(),
-      appName: config.appName,
-      version: config.version,
-    });
+    dataStorage
+      .push(`${level}-log`, {
+        message: content,
+        createdAt: new Date().toISOString(),
+        appName: config.appName,
+        version: config.version,
+      })
+      .then();
   },
 });
 
 afterEach(() => {
-  jest.resetAllMocks();
+  jest.clearAllMocks();
 });
 
 describe('When configured with silent "false"', () => {

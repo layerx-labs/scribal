@@ -1,4 +1,4 @@
-import Logger, { InitialConfig } from '@taikai/log-service';
+import Logger, { InitialConfig } from '@taikai/scribal';
 import path from 'path';
 
 const initConfig: InitialConfig = {

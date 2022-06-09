@@ -1,4 +1,4 @@
-const { default: Logger } = require('@taikai/log-service');
+const { default: Logger } = require('@taikai/scribal');
 
 const initConfig = {
   appName: 'My App',

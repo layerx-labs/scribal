@@ -19,7 +19,7 @@ const { combine, timestamp, label, printf, prettyPrint } = format;
 /**
  *
  */
-class LogService {
+class Scribal {
   private loggers: LoggerPlugin[];
   private blackListParams: string[];
   private globalConfig: InitialConfig;
@@ -145,15 +145,18 @@ class LogService {
       timestamp(),
       formatOptions?.prettify ? prettyPrint({ depth: 4 }) : this.simplifyPrint()
     );
-
-    for (const level of Object.values(LogLevel)) {
+    const levels = Object.values(LogLevel);
+    for (const level of levels) {
       logger[level] = (msg: any) => {
-        if (formatOptions) {
-          const transformedMsg = transform({ level: level, message: msg });
-          const symbolKey = Object.getOwnPropertySymbols(transformedMsg)[0];
-          return plugin.log(level, (transformedMsg as any)[symbolKey]) as any;
+        const index = levels.indexOf(logger.level as LogLevel);
+        if (index === -1 || levels.slice(index).includes(level)) {
+          if (formatOptions) {
+            const transformedMsg = transform({ level: level, message: msg });
+            const symbolKey = Object.getOwnPropertySymbols(transformedMsg)[0];
+            return plugin.log(level, (transformedMsg as any)[symbolKey]) as any;
+          }
+          return plugin.log(level, msg) as any;
         }
-        return plugin.log(level, msg) as any;
       };
     }
   }
@@ -244,4 +247,4 @@ class LogService {
 }
 
 export * from '@types';
-export default LogService;
+export default Scribal;

@@ -1,4 +1,4 @@
-import Logger, { InitialConfig } from '@taikai/scribal';
+import Scribal, { InitialConfig } from '@taikai/scribal';
 import path from 'path';
 
 const initConfig: InitialConfig = {
@@ -17,9 +17,8 @@ const initConfig: InitialConfig = {
 
 const blackListKeys = ['password', 'phoneNumber', 'address'];
 
-const logger = new Logger(blackListKeys, '*');
+const logger = new Scribal(blackListKeys, '*');
 logger.init(initConfig);
-
 const person = {
   name: 'marshall',
   age: 25,
@@ -40,6 +39,12 @@ const person = {
     },
   ],
 };
+
+logger.addLogger(() => ({
+  log(level, message) {
+    console.log('loggerPlugin :>> ', `${level} - ${message}`);
+  },
+}));
 
 logger.i(['Find my personal information', person, 'Hope you enjoy']);
 logger.d('I am being debugged 🚫🐞');

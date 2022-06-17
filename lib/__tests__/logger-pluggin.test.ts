@@ -1,4 +1,4 @@
-import LogService from '../index';
+import Scribal from '../index';
 
 const initConfig = {
   appName: 'My App',
@@ -10,10 +10,10 @@ const dataStorage = {
   push: jest.fn().mockImplementation(async (_level, _message) => true),
 };
 
-let sut = new LogService();
+let sut = new Scribal();
 
 const resetSut = () => {
-  sut = new LogService();
+  sut = new Scribal();
 };
 
 const loggerPluginMaker = (config: any) => ({

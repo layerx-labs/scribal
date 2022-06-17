@@ -1,8 +1,8 @@
-import LogService from '../index';
+import Scribal from '../index';
 
-const makeSut = (_blackListParams?: string[]) => new LogService(_blackListParams);
+const makeSut = (_blackListParams?: string[]) => new Scribal(_blackListParams);
 
-describe(LogService.name, () => {
+describe(Scribal.name, () => {
   const blacklist = ['password', 'phoneNumber', 'email'];
 
   it('should return the blacklist', () => {

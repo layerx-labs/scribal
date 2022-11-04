@@ -79,7 +79,7 @@ function sanitize(content: any, blackListParams: string[], mask?: string): any {
     case 'string':
       return sanitizeStr(content, blackListParams, mask);
     case 'object':
-      return sanitizeObj(content, blackListParams, mask);
+      return content && sanitizeObj(content, blackListParams, mask);
     default:
       return content;
   }

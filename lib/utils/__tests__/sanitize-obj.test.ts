@@ -1,6 +1,6 @@
 import { sanitizeObj } from '../sanitizers';
 
-const makeSut = (incomingObj?: Record<string, any>, blackListKeys?: string[], mask?: string) => ({
+const makeSut = (incomingObj: Record<string, any>, blackListKeys: string[], mask?: string) => ({
   sut: sanitizeObj,
   blackListKeys,
   incomingObj,

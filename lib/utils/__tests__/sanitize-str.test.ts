@@ -1,6 +1,6 @@
 import { sanitizeStr } from '../sanitizers';
 
-const makeSut = (incomingStr?: string, blackListParams?: string[], mask?: string) => ({
+const makeSut = (incomingStr: string, blackListParams: string[], mask?: string) => ({
   sut: sanitizeStr,
   blackListParams,
   incomingStr,

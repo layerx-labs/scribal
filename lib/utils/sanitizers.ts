@@ -34,7 +34,7 @@ export function sanitizeStr(str: string, blackListParams: string[], mask?: strin
  */
 function includeAllObjProps(obj: Record<string, any>) {
   let result = {};
-  while (obj !== Object.prototype) {
+  while (obj !== Object.prototype && obj !== null) {
     result = {
       ...Object.getOwnPropertyNames(obj).reduce(
         (acc, key) =>
@@ -66,7 +66,7 @@ export function sanitizeObj(obj: Record<string, any>, blackListKeys: string[], m
       acc[key] = blackListKeys.includes(key)
         ? (_mask ?? '*').repeat(6)
         : typeof value === 'object'
-        ? sanitizer(value, _mask)
+        ? value && sanitizer(value, _mask)
         : value;
       return acc;
     }, {} as Record<string, any>);

@@ -1,6 +1,6 @@
 {
   "name": "@taikai/scribal",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Write logs in a file/console or a custom output",
   "main": "dist/lib/index.js",
   "types": "dist/lib/index.d.ts",

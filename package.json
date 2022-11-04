@@ -11,6 +11,7 @@
     "lint": "eslint . --ext ts --ext js --fix",
     "format": "prettier --write **/*.{js,ts}",
     "build": "tsc && tscpaths -p ./tsconfig.json -s ./ -o ./dist",
+    "deploy": "npm publish --access public",
     "postbuild": "npm run typedoc && npm pack && node ./scripts/update-lib-tester-pkg-json.js",
     "test": "jest -u --config=jest.config.js --noStackTrace --detectOpenHandles  --no-cache --passWithNoTests",
     "prepare": "husky install"

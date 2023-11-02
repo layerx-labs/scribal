@@ -114,7 +114,7 @@ const dataStorage = {
  * @returns an object that must contain the log method
  */
 const customLoggerMaker = (config: InitialConfig) => ({
-  // It will be called in sync with the log methods i(), d(), w(), e(),...
+  // It will be called in sync with the log methods i(), d(), w(), e(),....
   log: (level: string, content: any) => {
     dataStorage
       .create(`${level}-log`, {

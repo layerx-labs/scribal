@@ -51,5 +51,6 @@ logger.d('I am being debugged 🚫🐞');
 logger.w('You are about to love this lib ⚠');
 logger.e('Oh no! Something went wrong 😱');
 logger.i('Nevermind', 'its all okay 💯');
+logger.d('Test Bigint', { bigInt: BigInt(9007199254740991) });
 
 export {};

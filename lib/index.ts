@@ -69,10 +69,14 @@ class Scribal {
       } = info;
       return `${timestampInfo} [${labelInfo.toString().padStart(5, ' ')}] ${levelInfo}: ${
         Object.keys(restOfInfo).length
-          ? JSON.stringify({ message: messageInfo, ...restOfInfo })
+          ? JSON.stringify({ message: messageInfo, ...restOfInfo }, (_key, value) =>
+              typeof value === 'bigint' ? Number(value) : value
+            )
           : typeof messageInfo === 'string'
           ? messageInfo
-          : JSON.stringify(messageInfo)
+          : JSON.stringify(messageInfo, (_key, value) =>
+              typeof value === 'bigint' ? Number(value) : value
+            )
       }`;
     });
   }
